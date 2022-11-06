@@ -1,0 +1,131 @@
+---
+title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
+format: html
+editor: visual
+---
+
+```{r import-libraries}
+pacman::p_load(
+  tidyverse,
+  gtsummary,
+  googlesheets4,
+  skimr,
+  finalfit,
+  rstatix
+)
+```
+
+```{r import-dataser}
+gs4_auth("obesity.yankah@gmail.com")
+obesity <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
+                      
+                      # Specify column names
+           col_names = c(
+                   "start",
+                   "end",
+                   "today",
+                   "name",
+                   "sex",
+                   "age_years",
+                   "educational_status",
+                   "marital_satus",
+                   "ethnicity",
+                   "other_ethnicity",
+                   "religion",
+                   "other_religion",
+                   "occupation",
+                   "employment_status",
+                   "residential_status",
+                   "other_residential_status",
+                   "region",
+                   "district",
+                   "town",
+                   "monthly_income",
+                   "drunk_alcohol",
+                   "last_alcohol",
+                   "frequent_alcohol",
+                   "smoke_cigarette",
+                   "last_smoking",
+                   "smoke_sticks",
+                   "quit_smoking",
+                   "hours_sleep",
+                   "fbs_today",
+                   "fbs_last_visit",
+                   "sbp",
+                   "dbp",
+                   "duration_dm",
+                   "knowledge_dm",
+                   "other_knowledge_dm",
+                   "medication",
+                   "reaction_dm",
+                   "diagnosed_with",
+                   "retinopathy",
+                   "cataract",
+                   "hypertension",
+                   "neuropathy",
+                   "ckd",
+                   "diabetic_foot",
+                   "sexual_weakness",
+                   "vigorous_exercise",
+                   "days_vigorous_exercise",
+                   "time_vigourous_exercise",
+                   "moderate_exercise",
+                   "days_moderate_exercise",
+                   "time_moderate_exercise",
+                   "cycle_walk",
+                   "days_cycle_walk",
+                   "time_cycle_walk",
+                   "time_minimal_activity",
+                   "time_sedentary",
+                   "exercise_program",
+                   "meals_day",
+                   "drinks_day",
+                   "sweets",
+                   "sweetener",
+                   "fried_foods",
+                   "saturated_fat",
+                   "refined_food",
+                   "butter",
+                   "eat_outside",
+                   "height",
+                   "weight",
+                   "body_fat",
+                   "muscle_mass",
+                   "visceral_fat",
+                   "waist_circumference",
+                   "meta_instance"
+
+           ),
+        
+           # Specify column types
+           col_types = "TTDcciccccccccccccccccccccciddiiiccccccccccccciiciiciiiiccccccccccidddid?",
+           skip = 1)
+```
+
+```{r data-wrangling}
+
+```
+
+```{r skim-data}
+skim(obesity)
+```
+
+```{r normality-test}
+obesity%>%
+  shapiro_test()
+```
+
+```{r descriptive-table}
+demographics%>%
+        tbl_summary()%>%
+        modify_caption("**Table 1. Characteristics of participants**")%>%
+        bold_labels()
+```
+
+```{r univariate-regression}
+
+```
+
+```{r multiple-logistic-regression}
+
+```
