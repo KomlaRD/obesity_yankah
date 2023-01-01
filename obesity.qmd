@@ -102,6 +102,23 @@ obesity <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1Mv
            skip = 1)
 ```
 
+
+```{r remove-columns}
+# remove columns not needed
+
+obesity <- obesity%>%
+  select(
+    -c(
+      start,
+      end,
+      today,
+      name,
+      diagnose_with_following,
+      meta_instance
+    )
+  )
+```
+
 ```{r data-wrangling}
 
 ```
