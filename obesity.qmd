@@ -17,7 +17,7 @@ pacman::p_load(
 
 ```{r import-dataser}
 gs4_auth("obesity.yankah@gmail.com")
-obesity <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
+obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
                       
                       # Specify column names
            col_names = c(
@@ -58,7 +58,7 @@ obesity <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1Mv
                    "other_knowledge_dm",
                    "medication",
                    "reaction_dm",
-                   "diagnosed_with",
+                   "diagnose_with_following",
                    "retinopathy",
                    "cataract",
                    "hypertension",
@@ -94,12 +94,11 @@ obesity <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1Mv
                    "visceral_fat",
                    "waist_circumference",
                    "meta_instance"
-
+                   
            ),
         
            # Specify column types
-           col_types = "TTDcciccccccccccccccccccccciddiiiccccccccccccciiciiciiiiccccccccccidddid?",
-           skip = 1)
+           col_types = "TTDcciccccccccccccccccccccciddiiicccc?cccccccciiciiciiiiccccccccccidddid?", skip = 1)
 ```
 
 
