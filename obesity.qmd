@@ -101,7 +101,6 @@ obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbS
            col_types = "TTDcciccccccccccccccccccccciddiiicccc?cccccccciiciiciiiiccccccccccidddid?", skip = 1)
 ```
 
-
 ```{r remove-columns}
 # remove columns not needed
 
