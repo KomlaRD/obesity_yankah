@@ -11,7 +11,8 @@ pacman::p_load(
   googlesheets4,
   skimr,
   finalfit,
-  rstatix
+  rstatix,
+  GGally
 )
 ```
 
@@ -266,7 +267,7 @@ obesity <- obesity%>%
                          ifelse(
                                   bmi >= 25 & bmi <= 29.9, "Overweight",
                                   ifelse(
-                                            bmi > 30, "Obesity",
+                                            bmi >= 30, "Obesity",
                                             NA
                                           
                                   )
@@ -288,8 +289,103 @@ skim(obesity)
 
 ```{r normality-test}
 obesity%>%
-  shapiro_test()
+  shapiro_test(age_years, smoke_sticks, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, duration_dm, days_vigorous_exercise, time_vigourous_exercise, days_moderate_exercise, days_cycle_walk, time_cycle_walk, time_minimal_activity, time_sedentary, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)
 ```
+
+```{r demographics}
+demographics <- obesity%>%
+  select(
+    age_years,
+    sex,
+    marital_satus,
+    residential_status,
+    religion,
+    educational_status,
+    ethnicity,
+    occupation,
+    region,
+    district,
+    town,
+    monthly_income,
+    smoke_cigarette,
+    last_smoking,
+    smoke_sticks,
+    quit_smoking,
+    hours_sleep
+  )
+```
+
+```{r anthropometry}
+anthropometry <- obesity%>%
+  select(
+    weight,
+    height,
+    bmi,
+    bmi_cat,
+    waist_circumference,
+    body_fat,
+    visceral_fat,
+    muscle_mass
+  )
+```
+
+```{r clinical}
+clinical <- obesity%>%
+  select(
+    fbs_today,
+    fbs_last_visit,
+    sbp,
+    dbp,
+    duration_dm,
+    knowledge_dm,
+    medication,
+    reaction_dm,
+    retinopathy,
+    cataract,
+    hypertension,
+    neuropathy,
+    ckd,
+    diabetic_foot,
+    sexual_weakness
+  )
+```
+
+```{r physical}
+physical <- obesity%>%
+  select(
+    vigorous_exercise,
+    days_vigorous_exercise,
+    time_vigourous_exercise,
+    moderate_exercise,
+    days_moderate_exercise,
+    time_moderate_exercise,
+    cycle_walk,
+    time_cycle_walk,
+    time_minimal_activity,
+    time_sedentary,
+    exercise_program
+  )
+```
+
+
+```{r dietary}
+dietary <- obesity%>%
+  select(
+    meals_day,
+    drinks_day,
+    sweets,
+    sweetener,
+    fried_foods,
+    saturated_fat,
+    refined_food,
+    butter,
+    eat_outside,
+    drunk_alcohol,
+    last_alcohol,
+    frequent_alcohol
+  )
+```
+
 
 ```{r descriptive-table}
 demographics%>%
