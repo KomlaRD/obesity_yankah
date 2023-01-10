@@ -400,6 +400,35 @@ demographics%>%
         bold_labels()
 ```
 
+```{r table-two}
+anthropometry%>%
+        tbl_summary()%>%
+        modify_caption("**Table 2. Anthropometry**")%>%
+        bold_labels()
+```
+
+```{r clinical}
+clinical%>%
+        tbl_summary()%>%
+        modify_caption("**Table 1. Clinical**")%>%
+        bold_labels()
+```
+
+```{r dietary}
+dietary%>%
+        tbl_summary()%>%
+        modify_caption("**Table 4. Dietary**")%>%
+        bold_labels()
+```
+
+```{r physical}
+physical%>%
+        tbl_summary()%>%
+        modify_caption("**Table 5. Physical activity**")%>%
+        bold_labels()
+```
+
+
 ```{r univariate-regression}
 
 ```
