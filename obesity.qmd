@@ -387,6 +387,12 @@ dietary <- obesity%>%
 ```
 
 
+```{r scatterplot-matrix, warning=FALSE, message=FALSE}
+obesity%>%
+  select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%ggpairs()
+```
+
+
 ```{r descriptive-table}
 demographics%>%
         tbl_summary()%>%
