@@ -422,7 +422,9 @@ anthropometry%>%
 
 ```{r clinical-table}
 clinical%>%
-        tbl_summary()%>%
+        tbl_summary(
+          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency")
+        )%>%
         modify_caption("**Table 1. Clinical**")%>%
         bold_labels()
 ```
