@@ -2,7 +2,7 @@
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
 format: html
 editor: visual
-toc: yes
+toc: true
 fontsize: 12pt
 ---
 
@@ -130,8 +130,12 @@ obesity <- obesity%>%
                 ff_label("Sex"),
         educational_status = factor(educational_status)%>%
           fct_relevel(c(
-            ""
-          ))
+            "No formal education",
+            "Primary school",
+            "Middle school/JSS/JHS",
+            "Secondary school/SSS/SHS",
+            "Tertiary"
+          ))%>%
                 ff_label("Educational status"),
         marital_satus = factor(marital_satus)%>%
                 ff_label("Marital status"),
@@ -158,6 +162,13 @@ obesity <- obesity%>%
         town = factor(town)%>%
           ff_label("Town"),
         monthly_income = factor(monthly_income)%>%
+          fct_relevel(c(
+            "Below 200",
+            "Between 200 and 499",
+            "Between 500 and 999",
+            "Between 1000 and 1499",
+            "1500 and above"
+          ))%>%
           ff_label("Monthly income"),
         drunk_alcohol = factor(drunk_alcohol)%>%
           ff_label("Have you ever drunk alcohol?"),
@@ -288,6 +299,29 @@ obesity <- obesity%>%
 )
 ```
 
+```{r obesity-outcome}
+obesity <- obesity%>%
+  mutate(
+    bmi_outcome = bmi_cat%>%
+      fct_recode(
+        "Normal" = "Underweight",
+        "Normal" = "Normal",
+        "Overweight/Obesity" = "Overweight",
+        "Overweight/Obesity" = "Obesity"
+      )
+  )
+```
+
+
+```{r replace-unusual-weight}
+# Replace value of 729 with 72.9
+obesity$weight[obesity$ weight == 729] <- 72.9
+
+# Replace value of 967 with 96.7
+obesity$weight[obesity$weight == 967] <- 96.7
+```
+
+
 ```{r skim-data}
 skim(obesity)
 ```
@@ -403,7 +437,7 @@ obesity%>%
 demographics%>%
         tbl_summary(
           missing = "no",
-          sort = list(c(marital_satus, ethnicity, occupation, region, district, town) ~ "frequency")
+          sort = list(c(marital_satus, ethnicity, occupation, region, district, town, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
         bold_labels()
@@ -412,7 +446,8 @@ demographics%>%
 ```{r table-two}
 anthropometry%>%
         tbl_summary(
-          by = sex
+          by = sex,
+          missing = "no"
         )%>%
         modify_caption("**Table 2. Anthropometry**")%>%
         bold_labels()%>%
@@ -423,7 +458,8 @@ anthropometry%>%
 ```{r clinical-table}
 clinical%>%
         tbl_summary(
-          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency")
+          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
+          missing = "no"
         )%>%
         modify_caption("**Table 1. Clinical**")%>%
         bold_labels()
@@ -445,10 +481,29 @@ physical%>%
 
 
 ```{r univariate-regression}
-demographics%>%
-  tbl_regression()
+# demographics%>%
+#   tbl_regression()
 ```
 
 ```{r multiple-logistic-regression}
+#full_model <- glm(dm$dm ~ dm$age + dm$chol + dm$insurance, family=binomial (link=logit)) 
+#summary(full_model)
 
+# C statistics
+
+#Cstat(full_model)
+
+# Hosmer lemeshow
+
+#HL <- hoslem.test(x = full_model$y, y = fitted(full_model), g = 10)
+#HL
+# plot the observed vs expected number of cases for each of the 10 groups 
+#plot(HL$observed[,"y1"], HL$expected[,"yhat1"])
+
+# Alternative hosmer
+#logitgof(obs = full_model$y, exp = fitted(full_model), g = 10) 
+
+# Deviance 
+
+#anova(full_model, test="Chisq")
 ```
