@@ -2,6 +2,8 @@
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
 format: html
 editor: visual
+toc: yes
+fontsize: 12pt
 ---
 
 ```{r import-libraries}
@@ -16,7 +18,7 @@ pacman::p_load(
 )
 ```
 
-```{r import-dataser}
+```{r import-dataset}
 gs4_auth("obesity.yankah@gmail.com")
 obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
                       
@@ -127,6 +129,9 @@ obesity <- obesity%>%
         sex = factor(sex)%>%
                 ff_label("Sex"),
         educational_status = factor(educational_status)%>%
+          fct_relevel(c(
+            ""
+          ))
                 ff_label("Educational status"),
         marital_satus = factor(marital_satus)%>%
                 ff_label("Marital status"),
@@ -325,7 +330,8 @@ anthropometry <- obesity%>%
     waist_circumference,
     body_fat,
     visceral_fat,
-    muscle_mass
+    muscle_mass,
+    sex
   )
 ```
 
@@ -389,39 +395,46 @@ dietary <- obesity%>%
 
 ```{r scatterplot-matrix, warning=FALSE, message=FALSE}
 obesity%>%
-  select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%ggpairs()
+  select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%ggpairs(columnLabels = c("age", "hr", "fbs0", "fbs1", "sbp", "dbp", "ht", "wt", "bf", "mm", "vf", "wc", "bmi"))
 ```
 
 
 ```{r descriptive-table}
 demographics%>%
-        tbl_summary()%>%
+        tbl_summary(
+          missing = "no",
+          sort = list(c(marital_satus, ethnicity, occupation, region, district, town) ~ "frequency")
+        )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
         bold_labels()
 ```
 
 ```{r table-two}
 anthropometry%>%
-        tbl_summary()%>%
+        tbl_summary(
+          by = sex
+        )%>%
         modify_caption("**Table 2. Anthropometry**")%>%
-        bold_labels()
+        bold_labels()%>%
+  add_p()%>%
+  bold_p()
 ```
 
-```{r clinical}
+```{r clinical-table}
 clinical%>%
         tbl_summary()%>%
         modify_caption("**Table 1. Clinical**")%>%
         bold_labels()
 ```
 
-```{r dietary}
+```{r dietary-table}
 dietary%>%
         tbl_summary()%>%
         modify_caption("**Table 4. Dietary**")%>%
         bold_labels()
 ```
 
-```{r physical}
+```{r physical-table}
 physical%>%
         tbl_summary()%>%
         modify_caption("**Table 5. Physical activity**")%>%
@@ -430,7 +443,8 @@ physical%>%
 
 
 ```{r univariate-regression}
-
+demographics%>%
+  tbl_regression()
 ```
 
 ```{r multiple-logistic-regression}
