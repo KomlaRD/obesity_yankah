@@ -1,6 +1,6 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: html
+format: docx
 editor: visual
 toc: true
 fontsize: 12pt
@@ -19,7 +19,10 @@ pacman::p_load(
   skimr,
   finalfit,
   rstatix,
-  GGally
+  GGally,
+  DescTools, # C statistic
+  ResourceSelection, # Hosmer-Lemeshow statistic
+  generalhoslem # Hosmer-Lemeshow
 )
 ```
 
@@ -112,11 +115,9 @@ obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbS
 
 ```{r remove-columns}
 # remove columns not needed
-
 obesity <- obesity%>%
-  select(
-    -c(
-      start,
+  dplyr::select(
+    -c(start,
       end,
       today,
       name,
@@ -128,14 +129,14 @@ obesity <- obesity%>%
 ```
 
 ```{r replace-unusual-weight}
-# Replace value of 729 with 72.9
-obesity$weight[obesity$ weight == 729] <- 72.9
+# Replace value of 729 with 114
+obesity$weight[obesity$ weight == 729] <- 114
 
 # Replace value of 967 with 96.7
 obesity$weight[obesity$weight == 967] <- 96.7
 
 # Replace unusual height values
-obesity$height[obesity$height == 14] <- 140
+obesity$height[obesity$height == 14] <- 144
 obesity$height[obesity$height == 95] <- 195
 ```
 
@@ -290,28 +291,34 @@ obesity <- obesity%>%
           ff_label("Waist circumference (cm)"),
         height_metres = height/100 %>%
                 ff_label("Height (m)"), 
-        bmi = weight/height_metres^2 %>%
+        bmi = (weight/height_metres^2) %>%
                 ff_label("BMI (kg/m2)"),
         bmi_cat = ifelse(
                 bmi < 18.5, "Underweight",
                 ifelse(
-                         bmi >= 18.5 & bmi <= 24.9, "Normal",
+                         bmi >= 18.5 & bmi <= 24.99999, "Normal",
                          ifelse(
-                                  bmi >= 25 & bmi <= 29.9, "Overweight",
+                                  bmi >= 25.00000 & bmi <= 29.99999, "Overweight",
                                   ifelse(
-                                            bmi >= 30, "Obesity", NA
+                                            bmi >= 30.00000, "Obesity",
+                              
+                                              NA
                                   )
                                  
                          )
                         
                 )
-               
-               
               
         )%>%
                 fct_relevel(c("Underweight", "Normal","Overweight","Obesity"))%>% ff_label("BMI categories")
 )
 ```
+
+```{r replace-bmi-value, eval=FALSE}
+# Replace bmi value of 25 with 25.00
+obesity$bmi[obesity$ bmi == 25] <- 25.00
+```
+
 
 ```{r obesity-outcome}
 obesity <- obesity%>%
@@ -339,7 +346,7 @@ obesity%>%
 
 ```{r demographics}
 demographics <- obesity%>%
-  select(
+  dplyr::select(
     age_years,
     sex,
     marital_satus,
@@ -363,7 +370,7 @@ demographics <- obesity%>%
 
 ```{r anthropometry}
 anthropometry <- obesity%>%
-  select(
+  dplyr::select(
     weight,
     height,
     bmi,
@@ -379,7 +386,7 @@ anthropometry <- obesity%>%
 
 ```{r clinical}
 clinical <- obesity%>%
-  select(
+  dplyr::select(
     fbs_today,
     fbs_last_visit,
     sbp,
@@ -402,7 +409,7 @@ clinical <- obesity%>%
 
 ```{r physical}
 physical <- obesity%>%
-  select(
+  dplyr::select(
     vigorous_exercise,
     days_vigorous_exercise,
     time_vigourous_exercise,
@@ -422,7 +429,7 @@ physical <- obesity%>%
 
 ```{r dietary}
 dietary <- obesity%>%
-  select(
+  dplyr::select(
     meals_day,
     drinks_day,
     sweets,
@@ -443,7 +450,7 @@ dietary <- obesity%>%
 
 ```{r scatterplot-matrix, warning=FALSE, message=FALSE}
 obesity%>%
-  select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%
+  dplyr::select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%
   ggcorr(label = TRUE)
   
   
@@ -453,6 +460,7 @@ obesity%>%
 
 ```{r descriptive-table}
 demographics%>%
+  dplyr::select(-c(bmi_outcome))%>%
         tbl_summary(
           missing = "no",
           sort = list(c(marital_satus, ethnicity, occupation, region, district, town, residential_status) ~ "frequency")
@@ -471,12 +479,13 @@ demographics%>%
         modify_caption("**Table 2. Characteristics of participants by outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 
 ```{r table-two}
 anthropometry%>%
+   dplyr::select(-c(bmi_outcome))%>%
         tbl_summary(
           by = sex,
           missing = "no"
@@ -489,6 +498,7 @@ anthropometry%>%
 
 ```{r anthropometry-by-outcome}
 anthropometry%>%
+   dplyr::select(-c(sex))%>%
         tbl_summary(
           by = bmi_outcome,
           missing = "no"
@@ -496,21 +506,23 @@ anthropometry%>%
         modify_caption("**Table 4. Anthropometry by outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 ```{r anthropometry-table}
 anthropometry%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
         tbl_summary(
           missing = "no"
         )%>%
-        modify_caption("**Table 5. Anthropometry by outcome**")%>%
+        modify_caption("**Table 5. Anthropometry table**")%>%
         bold_labels()
 ```
 
 
 ```{r clinical-by-outcome}
 clinical%>%
+   dplyr::select(-c(sex))%>%
         tbl_summary(
           sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
           missing = "no",
@@ -519,12 +531,13 @@ clinical%>%
         modify_caption("**Table 6. Clinical by bmi outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 
 ```{r clinical-table}
 clinical%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
         tbl_summary(
           sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
           missing = "no"
@@ -535,6 +548,7 @@ clinical%>%
 
 ```{r clinical-by-sex}
 clinical%>%
+   dplyr::select(-c(bmi_outcome))%>%
         tbl_summary(
           by = sex,
           sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
@@ -543,21 +557,26 @@ clinical%>%
         modify_caption("**Table 8. Clinical by sex**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 
 ```{r dietary-table}
 dietary%>%
-        tbl_summary()%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          missing_text = "Missing"
+        )%>%
         modify_caption("**Table 9. Dietary**")%>%
         bold_labels()
 ```
 
 ```{r dietary-by-sex}
 dietary%>%
+   dplyr::select(-c(bmi_outcome))%>%
         tbl_summary(
-          by = sex
+          by = sex,
+          missing_text = "Missing"
         )%>%
         modify_caption("**Table 10. Dietary by sex**")%>%
         bold_labels()%>%
@@ -567,27 +586,34 @@ dietary%>%
 
 ```{r dietary-by-outcome}
 dietary%>%
+   dplyr::select(-c(sex))%>%
         tbl_summary(
-          by = bmi_outcome
+          by = bmi_outcome,
+          missing_text = "Missing"
         )%>%
         modify_caption("**Table 11. Dietary by outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 
 ```{r physical-table}
 physical%>%
-        tbl_summary()%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          missing_text = "Missing"
+        )%>%
         modify_caption("**Table 12. Physical activity**")%>%
         bold_labels()
 ```
 
 ```{r physical-by-sex}
 physical%>%
-        tbl_summary(by = sex)%>%
-        modify_caption("**Table 13. Physical activity**")%>%
+  dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(by = sex,
+                    missing_text = "Missing")%>%
+        modify_caption("**Table 13. Physical activity by sex**")%>%
         bold_labels()%>%
   add_p()%>%
   bold_p()
@@ -595,11 +621,13 @@ physical%>%
 
 ```{r physical-by-outcome}
 physical%>%
-        tbl_summary(by = bmi_outcome)%>%
-        modify_caption("**Table 14. Physical activity**")%>%
+  dplyr::select(-c(sex))%>%
+        tbl_summary(by = bmi_outcome,
+                    missing_text = "Missing")%>%
+        modify_caption("**Table 14. Physical activity by outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p()
+  bold_p(t = 0.25)
 ```
 
 
@@ -608,35 +636,43 @@ physical%>%
 #   tbl_regression()
 ```
 
-```{r multiple-logistic-regression}
-#full_model <- glm(dm$dm ~ dm$age + dm$chol + dm$insurance, family=binomial (link=logit)) 
-#summary(full_model)
+```{r multiple-logistic-regression, eval=FALSE}
+full_model <- glm(obesity$bmi_outcome ~ obesity$age_years + obesity$sex + obesity$ethnicity + obesity$occupation + obesity$weight + obesity$height + obesity$waist_circumference + obesity$body_fat + obesity$visceral_fat + obesity$muscle_mass + obesity$sbp + obesity$dbp + obesity$knowledge_dm + obesity$retinopathy + obesity$neuropathy + obesity$eat_outside + obesity$refined_food + obesity$sweets + obesity$butter + obesity$vigorous_exercise + obesity$time_sedentary, family=binomial (link=logit)) 
+
+# Summary
+summary(full_model)
 
 # C statistics
 
-#Cstat(full_model)
+DescTools::Cstat(full_model)
 
 # Hosmer lemeshow
 
-#HL <- hoslem.test(x = full_model$y, y = fitted(full_model), g = 10)
-#HL
+HL <- ResourceSelection::hoslem.test(x = full_model$y, y = fitted(full_model), g = 10)
+HL
+
 # plot the observed vs expected number of cases for each of the 10 groups 
-#plot(HL$observed[,"y1"], HL$expected[,"yhat1"])
+plot(HL$observed[,"y1"], HL$expected[,"yhat1"])
 
 # Alternative hosmer
-#logitgof(obs = full_model$y, exp = fitted(full_model), g = 10) 
+generalhoslem::logitgof(obs = full_model$y, exp = fitted(full_model), g = 10) 
 
 # Deviance 
 
-#anova(full_model, test="Chisq")
+anova(full_model, test="Chisq")
 ```
 
+```{r regression-table, eval=FALSE}
+tbl_regression(full_model, exponentiate = TRUE)%>%
+  add_global_p()%>%bold_p()%>%
+  italicize_levels()
+```
 
-```{r}
+```{r eval=FALSE}
 obesity%>%filter(weight > 160)
 ```
 ```{r}
-obesity%>%select(weight, height, bmi, bmi_outcome, bmi_cat)%>%filter(is.na(bmi_outcome))
+obesity%>%dplyr::select(weight, height, bmi, bmi_cat)%>%filter(is.na(bmi_cat))
 ```
 
 ### Additional cleaning strategies employed
