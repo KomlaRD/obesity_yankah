@@ -1,6 +1,6 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: docx
+format: html
 editor: visual
 toc: true
 fontsize: 12pt
