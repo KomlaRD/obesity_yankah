@@ -1,8 +1,15 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: html
+format: docx
 editor: visual
+toc: true
+fontsize: 12pt
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
 
 ```{r import-libraries}
 pacman::p_load(
@@ -11,11 +18,15 @@ pacman::p_load(
   googlesheets4,
   skimr,
   finalfit,
-  rstatix
+  rstatix,
+  GGally,
+  DescTools, # C statistic
+  ResourceSelection, # Hosmer-Lemeshow statistic
+  generalhoslem # Hosmer-Lemeshow
 )
 ```
 
-```{r import-dataser}
+```{r import-dataset}
 gs4_auth("obesity.yankah@gmail.com")
 obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
                       
@@ -103,18 +114,29 @@ obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbS
 
 ```{r remove-columns}
 # remove columns not needed
-
 obesity <- obesity%>%
-  select(
-    -c(
-      start,
+  dplyr::select(
+    -c(start,
       end,
       today,
       name,
       diagnose_with_following,
-      meta_instance
+      meta_instance,
+      other_religion #Empty column
     )
   )
+```
+
+```{r replace-unusual-weight}
+# Replace value of 729 with 114
+obesity$weight[obesity$ weight == 729] <- 114
+
+# Replace value of 967 with 96.7
+obesity$weight[obesity$weight == 967] <- 96.7
+
+# Replace unusual height values
+obesity$height[obesity$height == 14] <- 144
+obesity$height[obesity$height == 95] <- 195
 ```
 
 ```{r data-wrangling}
@@ -125,6 +147,13 @@ obesity <- obesity%>%
         sex = factor(sex)%>%
                 ff_label("Sex"),
         educational_status = factor(educational_status)%>%
+          fct_relevel(c(
+            "No formal education",
+            "Primary school",
+            "Middle school/JSS/JHS",
+            "Secondary school/SSS/SHS",
+            "Tertiary"
+          ))%>%
                 ff_label("Educational status"),
         marital_satus = factor(marital_satus)%>%
                 ff_label("Marital status"),
@@ -134,8 +163,6 @@ obesity <- obesity%>%
           ff_label("Other ethnicity"),
         religion = factor(religion)%>%
                 ff_label("Religion"),
-        other_religion = factor(other_religion)%>%
-          ff_label("Other religion"),
         occupation = factor(occupation)%>%
           ff_label("Occupation"),
         employment_status = factor(employment_status)%>%
@@ -151,6 +178,13 @@ obesity <- obesity%>%
         town = factor(town)%>%
           ff_label("Town"),
         monthly_income = factor(monthly_income)%>%
+          fct_relevel(c(
+            "Below 200",
+            "Between 200 and 499",
+            "Between 500 and 999",
+            "Between 1000 and 1499",
+            "1500 and above"
+          ))%>%
           ff_label("Monthly income"),
         drunk_alcohol = factor(drunk_alcohol)%>%
           ff_label("Have you ever drunk alcohol?"),
@@ -256,30 +290,49 @@ obesity <- obesity%>%
           ff_label("Waist circumference (cm)"),
         height_metres = height/100 %>%
                 ff_label("Height (m)"), 
-        bmi = weight/height_metres^2 %>%
+        bmi = (weight/height_metres^2) %>%
                 ff_label("BMI (kg/m2)"),
         bmi_cat = ifelse(
                 bmi < 18.5, "Underweight",
                 ifelse(
-                         bmi >= 18.5 & bmi <= 24.9, "Normal",
+                         bmi >= 18.5 & bmi <= 24.99999, "Normal",
                          ifelse(
-                                  bmi >= 25 & bmi <= 29.9, "Overweight",
+                                  bmi >= 25.00000 & bmi <= 29.99999, "Overweight",
                                   ifelse(
-                                            bmi > 30, "Obesity",
-                                            NA
-                                          
+                                            bmi >= 30.00000, "Obesity",
+                              
+                                              NA
                                   )
                                  
                          )
                         
                 )
-               
-               
               
         )%>%
                 fct_relevel(c("Underweight", "Normal","Overweight","Obesity"))%>% ff_label("BMI categories")
 )
 ```
+
+```{r replace-bmi-value, eval=FALSE}
+# Replace bmi value of 25 with 25.00
+obesity$bmi[obesity$ bmi == 25] <- 25.00
+```
+
+
+```{r obesity-outcome}
+obesity <- obesity%>%
+  mutate(
+    bmi_outcome = bmi_cat%>%
+      fct_recode(
+        "Normal" = "Underweight",
+        "Normal" = "Normal",
+        "Overweight/Obesity" = "Overweight",
+        "Overweight/Obesity" = "Obesity"
+      )
+  )
+```
+
+
 
 ```{r skim-data}
 skim(obesity)
@@ -287,20 +340,345 @@ skim(obesity)
 
 ```{r normality-test}
 obesity%>%
-  shapiro_test()
+  shapiro_test(age_years, smoke_sticks, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, duration_dm, days_vigorous_exercise, time_vigourous_exercise, days_moderate_exercise, days_cycle_walk, time_cycle_walk, time_minimal_activity, time_sedentary, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)
 ```
+
+```{r demographics}
+demographics <- obesity%>%
+  dplyr::select(
+    age_years,
+    sex,
+    marital_satus,
+    residential_status,
+    religion,
+    educational_status,
+    ethnicity,
+    occupation,
+    region,
+    district,
+    town,
+    monthly_income,
+    smoke_cigarette,
+    last_smoking,
+    smoke_sticks,
+    quit_smoking,
+    hours_sleep,
+    bmi_outcome
+  )
+```
+
+```{r anthropometry}
+anthropometry <- obesity%>%
+  dplyr::select(
+    weight,
+    height,
+    bmi,
+    bmi_cat,
+    waist_circumference,
+    body_fat,
+    visceral_fat,
+    muscle_mass,
+    sex,
+    bmi_outcome
+  )
+```
+
+```{r clinical}
+clinical <- obesity%>%
+  dplyr::select(
+    fbs_today,
+    fbs_last_visit,
+    sbp,
+    dbp,
+    duration_dm,
+    knowledge_dm,
+    medication,
+    reaction_dm,
+    retinopathy,
+    cataract,
+    hypertension,
+    neuropathy,
+    ckd,
+    diabetic_foot,
+    sexual_weakness,
+    bmi_outcome,
+    sex
+  )
+```
+
+```{r physical}
+physical <- obesity%>%
+  dplyr::select(
+    vigorous_exercise,
+    days_vigorous_exercise,
+    time_vigourous_exercise,
+    moderate_exercise,
+    days_moderate_exercise,
+    time_moderate_exercise,
+    cycle_walk,
+    time_cycle_walk,
+    time_minimal_activity,
+    time_sedentary,
+    exercise_program,
+    bmi_outcome,
+    sex
+  )
+```
+
+
+```{r dietary}
+dietary <- obesity%>%
+  dplyr::select(
+    meals_day,
+    drinks_day,
+    sweets,
+    sweetener,
+    fried_foods,
+    saturated_fat,
+    refined_food,
+    butter,
+    eat_outside,
+    drunk_alcohol,
+    last_alcohol,
+    frequent_alcohol,
+    bmi_outcome,
+    sex
+  )
+```
+
+
+```{r scatterplot-matrix, warning=FALSE, message=FALSE}
+obesity%>%
+  dplyr::select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%
+  ggcorr(label = TRUE)
+  
+  
+#ggpairs(columnLabels = c("age", "hr", "fbs0", "fbs1", "sbp", "dbp", "ht", "wt", "bf", "mm", "vf", "wc", "bmi"))
+```
+
 
 ```{r descriptive-table}
 demographics%>%
-        tbl_summary()%>%
+  dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(
+          missing = "no",
+          sort = list(c(marital_satus, ethnicity, occupation, region, district, town, residential_status) ~ "frequency")
+        )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
         bold_labels()
 ```
 
+```{r demographics-by_outcome}
+demographics%>%
+        tbl_summary(
+          by = bmi_outcome,
+          missing = "no",
+          sort = list(c(marital_satus, ethnicity, occupation, region, district, town, residential_status) ~ "frequency")
+        )%>%
+        modify_caption("**Table 2. Characteristics of participants by outcome**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+
+```{r table-two}
+anthropometry%>%
+   dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(
+          by = sex,
+          missing = "no"
+        )%>%
+        modify_caption("**Table 3. Anthropometry by sex**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p()
+```
+
+```{r anthropometry-by-outcome}
+anthropometry%>%
+   dplyr::select(-c(sex))%>%
+        tbl_summary(
+          by = bmi_outcome,
+          missing = "no"
+        )%>%
+        modify_caption("**Table 4. Anthropometry by outcome**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+```{r anthropometry-table}
+anthropometry%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          missing = "no"
+        )%>%
+        modify_caption("**Table 5. Anthropometry table**")%>%
+        bold_labels()
+```
+
+
+```{r clinical-by-outcome}
+clinical%>%
+   dplyr::select(-c(sex))%>%
+        tbl_summary(
+          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
+          missing = "no",
+          by = bmi_outcome
+        )%>%
+        modify_caption("**Table 6. Clinical by bmi outcome**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+
+```{r clinical-table}
+clinical%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
+          missing = "no"
+        )%>%
+        modify_caption("**Table 7. Clinical**")%>%
+        bold_labels()
+```
+
+```{r clinical-by-sex}
+clinical%>%
+   dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(
+          by = sex,
+          sort = list(c(knowledge_dm, medication, reaction_dm) ~ "frequency"),
+          missing = "no"
+        )%>%
+        modify_caption("**Table 8. Clinical by sex**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+
+```{r dietary-table}
+dietary%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          missing_text = "Missing"
+        )%>%
+        modify_caption("**Table 9. Dietary**")%>%
+        bold_labels()
+```
+
+```{r dietary-by-sex}
+dietary%>%
+   dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(
+          by = sex,
+          missing_text = "Missing"
+        )%>%
+        modify_caption("**Table 10. Dietary by sex**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p()
+```
+
+```{r dietary-by-outcome}
+dietary%>%
+   dplyr::select(-c(sex))%>%
+        tbl_summary(
+          by = bmi_outcome,
+          missing_text = "Missing"
+        )%>%
+        modify_caption("**Table 11. Dietary by outcome**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+
+```{r physical-table}
+physical%>%
+   dplyr::select(-c(sex, bmi_outcome))%>%
+        tbl_summary(
+          missing_text = "Missing"
+        )%>%
+        modify_caption("**Table 12. Physical activity**")%>%
+        bold_labels()
+```
+
+```{r physical-by-sex}
+physical%>%
+  dplyr::select(-c(bmi_outcome))%>%
+        tbl_summary(by = sex,
+                    missing_text = "Missing")%>%
+        modify_caption("**Table 13. Physical activity by sex**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p()
+```
+
+```{r physical-by-outcome}
+physical%>%
+  dplyr::select(-c(sex))%>%
+        tbl_summary(by = bmi_outcome,
+                    missing_text = "Missing")%>%
+        modify_caption("**Table 14. Physical activity by outcome**")%>%
+        bold_labels()%>%
+  add_p()%>%
+  bold_p(t = 0.25)
+```
+
+
 ```{r univariate-regression}
-
+# demographics%>%
+#   tbl_regression()
 ```
 
-```{r multiple-logistic-regression}
+```{r multiple-logistic-regression, eval=FALSE}
+full_model <- glm(obesity$bmi_outcome ~ obesity$age_years + obesity$sex + obesity$ethnicity + obesity$occupation + obesity$weight + obesity$height + obesity$waist_circumference + obesity$body_fat + obesity$visceral_fat + obesity$muscle_mass + obesity$sbp + obesity$dbp + obesity$knowledge_dm + obesity$retinopathy + obesity$neuropathy + obesity$eat_outside + obesity$refined_food + obesity$sweets + obesity$butter + obesity$vigorous_exercise + obesity$time_sedentary, family=binomial (link=logit)) 
 
+# Summary
+summary(full_model)
+
+# C statistics
+
+DescTools::Cstat(full_model)
+
+# Hosmer lemeshow
+
+HL <- ResourceSelection::hoslem.test(x = full_model$y, y = fitted(full_model), g = 10)
+HL
+
+# plot the observed vs expected number of cases for each of the 10 groups 
+plot(HL$observed[,"y1"], HL$expected[,"yhat1"])
+
+# Alternative hosmer
+generalhoslem::logitgof(obs = full_model$y, exp = fitted(full_model), g = 10) 
+
+# Deviance 
+
+anova(full_model, test="Chisq")
 ```
+
+```{r regression-table, eval=FALSE}
+tbl_regression(full_model, exponentiate = TRUE)%>%
+  add_global_p()%>%bold_p()%>%
+  italicize_levels()
+```
+
+```{r eval=FALSE}
+obesity%>%filter(weight > 160)
+```
+```{r}
+obesity%>%dplyr::select(weight, height, bmi, bmi_cat)%>%filter(is.na(bmi_cat))
+```
+
+### Additional cleaning strategies employed
+
+One height entry was entered as 14. This was changed to 140 as 14 was less probable. Another entry of height of 95 was modified to 195.
+
+Consider removing individual with bmi of 75.5
+
+Select with p < 0.25
+
