@@ -3,6 +3,23 @@ title: "Data wrangling"
 format: html
 ---
 
+```{r import-libraries}
+pacman::p_load(
+  tidyverse,
+  gtsummary,
+  skimr,
+  finalfit,
+  rstatix,
+  GGally,
+  DescTools, # C statistic
+  ResourceSelection, # Hosmer-Lemeshow statistic
+  generalhoslem, # Hosmer-Lemeshow
+  rio, #import and export
+  here,
+  googlesheets4
+)
+```
+
 ```{r import-dataset}
 obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbSHV-FQj7IT2DJfoe5j_EFkjp_Ms/edit?usp=sharing",
                       
@@ -271,10 +288,6 @@ obesity <- obesity%>%
         )
 ```
 
-```{r replace-bmi-value}
-# Replace bmi value of 25 with 25.00
-obesity$bmi[obesity$ bmi == 25] <- 25.00000
-```
 
 ```{r bmi-categories}
 obesity <- obesity%>%
@@ -282,7 +295,6 @@ obesity <- obesity%>%
     bmi_cat = case_when(
     bmi < 18.5 ~ "Underweight",
     bmi >= 18.5 & bmi <= 24.99999 ~ "Normal",
-    bmi == 25.00000 ~ "Overweight",
     bmi >= 25.0000000000 & bmi <= 29.99999 ~ "Overweight",
     bmi >= 30 ~ "Obesity"
   )
@@ -299,7 +311,7 @@ obesity <- obesity%>%
 
 
 ```{r replace-missing-bmi-cat}
-obesity$bmi_cat <- obesity$bmi_cat[is.na(obesity$bmi_cat)] <- "Overweight"
+obesity$bmi_cat[is.na(obesity$bmi_cat)] <- "Overweight"
 ```
 
 
@@ -316,6 +328,21 @@ obesity <- obesity%>%
       )
   )
 ```
+
+
+```{r obese-non-obese}
+obesity <- obesity%>%
+  mutate(
+    bmi_obese = bmi_cat%>%
+      fct_recode(
+        "Non-obese" = "Underweight",
+        "Non-obese" = "Normal",
+        "Non-obese" = "Overweight",
+        "Obese" = "Obesity"
+      )
+  )
+```
+
 
 ```{r average-fbs}
 obesity <- obesity%>%
