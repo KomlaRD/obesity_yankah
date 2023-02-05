@@ -1,6 +1,6 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: html
+format: docx
 editor: visual
 toc: true
 fontsize: 12pt
@@ -186,7 +186,11 @@ obesity <- obesity%>%
         bmi_cat = factor(bmi_cat)%>%
        fct_relevel(c("Underweight", "Normal","Overweight","Obesity"))%>% ff_label("BMI categories"),
        fbs_average = fbs_average%>%
-         ff_label("Average fasting blood glucose (mmol/l)")
+         ff_label("Average fasting blood glucose (mmol/l)"),
+       bmi_outcome = bmi_outcome%>%
+         ff_label("BMI Outcome"),
+       bmi_obese = bmi_obese%>%
+         ff_label("Obese/Non-obese")
         )
 ```
 
@@ -211,9 +215,11 @@ demographics <- obesity%>%
     occupation,
     monthly_income,
     hours_sleep,
+    fbs_average,
     bmi_outcome,
     bmi_cat,
-    bmi_obese
+    bmi_obese,
+    hypertension
   )
 ```
 
@@ -236,7 +242,7 @@ anthropometry <- obesity%>%
 
 
 
-```{r scatterplot-matrix, warning=FALSE, message=FALSE}
+```{r scatterplot-matrix, warning=FALSE, message=FALSE, eval=FALSE}
 obesity%>%
   dplyr::select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%
   ggcorr(label = TRUE)
@@ -248,17 +254,18 @@ obesity%>%
 
 ```{r descriptive-table}
 demographics%>%
-  dplyr::select(-c(bmi_outcome, bmi_obese))%>%
+  dplyr::select(-c(bmi_obese, hypertension))%>%
         tbl_summary(
           missing = "no",
           sort = list(c(marital_satus, ethnicity, occupation, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
-        bold_labels()
+        bold_labels()%>%add_ci()
 ```
 
 ```{r demographics-by_outcome}
 demographics%>%
+  dplyr::select(-c(bmi_cat, bmi_outcome))%>%
         tbl_summary(
           by = bmi_obese,
           missing = "no",
@@ -267,10 +274,13 @@ demographics%>%
         modify_caption("**Table 2. Characteristics of participants by outcome**")%>%
         bold_labels()%>%
   add_p()%>%
-  bold_p(t = 0.25)%>%add_ci()
+  bold_p()
 ```
 
 
+```{r age-model, eval=FALSE}
+age_model <- glm(obesity$bmi_obese ~ obesity$age_years, family = binomial(link = logit))
+```
 
 
 ```{r univariate-regression}
@@ -279,7 +289,7 @@ demographics%>%
 ```
 
 ```{r multiple-logistic-regression, eval=FALSE}
-full_model <- glm(obesity$bmi_outcome ~ obesity$age_years + obesity$sex + obesity$ethnicity + obesity$occupation + obesity$weight + obesity$height + obesity$waist_circumference + obesity$body_fat + obesity$visceral_fat + obesity$muscle_mass + obesity$sbp + obesity$dbp + obesity$knowledge_dm + obesity$retinopathy + obesity$neuropathy + obesity$eat_outside + obesity$refined_food + obesity$sweets + obesity$butter + obesity$vigorous_exercise + obesity$time_sedentary, family=binomial (link=logit)) 
+full_model <- glm(obesity$bmi_obese ~ obesity$age_years + obesity$sex + obesity$ethnicity + obesity$occupation, family=binomial (link=logit)) 
 
 # Summary
 summary(full_model)
