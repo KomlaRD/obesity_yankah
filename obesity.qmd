@@ -22,7 +22,9 @@ pacman::p_load(
   GGally,
   DescTools, # C statistic
   ResourceSelection, # Hosmer-Lemeshow statistic
-  generalhoslem # Hosmer-Lemeshow
+  generalhoslem, # Hosmer-Lemeshow
+  rio, #import and export
+  here
 )
 ```
 
@@ -291,32 +293,41 @@ obesity <- obesity%>%
         height_metres = height/100 %>%
                 ff_label("Height (m)"), 
         bmi = (weight/height_metres^2) %>%
-                ff_label("BMI (kg/m2)"),
-        bmi_cat = ifelse(
-                bmi < 18.5, "Underweight",
-                ifelse(
-                         bmi >= 18.5 & bmi <= 24.99999, "Normal",
-                         ifelse(
-                                  bmi >= 25.00000 & bmi <= 29.99999, "Overweight",
-                                  ifelse(
-                                            bmi >= 30.00000, "Obesity",
-                              
-                                              NA
-                                  )
-                                 
-                         )
-                        
-                )
-              
-        )%>%
-                fct_relevel(c("Underweight", "Normal","Overweight","Obesity"))%>% ff_label("BMI categories")
+                ff_label("BMI (kg/m2)")
+        )
+```
+
+```{r replace-bmi-value}
+# Replace bmi value of 25 with 25.00
+obesity$bmi[obesity$ bmi == 25] <- 25.00000
+```
+
+```{r bmi-categories}
+obesity <- obesity%>%
+  mutate(
+    bmi_cat = case_when(
+    bmi < 18.5 ~ "Underweight",
+    bmi >= 18.5 & bmi <= 24.99999 ~ "Normal",
+    bmi == 25.00000 ~ "Overweight",
+    bmi >= 25.0000000000 & bmi <= 29.99999 ~ "Overweight",
+    bmi >= 30 ~ "Obesity"
+  )
 )
 ```
 
-```{r replace-bmi-value, eval=FALSE}
-# Replace bmi value of 25 with 25.00
-obesity$bmi[obesity$ bmi == 25] <- 25.00
+```{r bmi-cat-factor}
+obesity <- obesity%>%
+  mutate(
+    bmi_cat = factor(bmi_cat)%>%
+       fct_relevel(c("Underweight", "Normal","Overweight","Obesity"))%>% ff_label("BMI categories")
+  )
 ```
+
+
+```{r replace-missing-bmi-cat}
+obesity <- obesity$bmi_cat[is.na(obesity$bmi_cat)] <- "Overweight"
+```
+
 
 
 ```{r obesity-outcome}
@@ -332,6 +343,13 @@ obesity <- obesity%>%
   )
 ```
 
+```{r export-clean-data}
+export(obesity, here("data", "obesity_clean.csv"))
+```
+
+```{r import-clean-data}
+obesity <- import(here("data","obesity_clean.csv"))
+```
 
 
 ```{r skim-data}
@@ -342,6 +360,12 @@ skim(obesity)
 obesity%>%
   shapiro_test(age_years, smoke_sticks, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, duration_dm, days_vigorous_exercise, time_vigourous_exercise, days_moderate_exercise, days_cycle_walk, time_cycle_walk, time_minimal_activity, time_sedentary, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)
 ```
+
+## Methods
+
+### Data analysis
+
+
 
 ```{r demographics}
 demographics <- obesity%>%
