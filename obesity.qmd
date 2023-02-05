@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 pacman::p_load(
   tidyverse,
   gtsummary,
-  googlesheets4,
   skimr,
   finalfit,
   rstatix,
