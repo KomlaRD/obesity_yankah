@@ -317,6 +317,12 @@ obesity <- obesity%>%
   )
 ```
 
+```{r average-fbs}
+obesity <- obesity%>%
+  mutate(fbs_average = (fbs_today + fbs_last_visit) / 2 )
+```
+
+
 ```{r export-clean-data}
 export(obesity, here("data", "obesity_clean.csv"))
 ```
