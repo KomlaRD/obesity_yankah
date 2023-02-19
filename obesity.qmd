@@ -1,6 +1,6 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: docx
+format: html
 editor: visual
 toc: true
 fontsize: 12pt
@@ -22,7 +22,11 @@ pacman::p_load(
   ResourceSelection, # Hosmer-Lemeshow statistic
   generalhoslem, # Hosmer-Lemeshow
   rio, #import and export
-  here
+  here,
+  finalfit,
+  broom,
+  kableExtra,
+  knitr
 )
 ```
 
@@ -44,6 +48,14 @@ obesity <- obesity%>%
   ))
 ```
 
+```{r inspect-dataset}
+glimpse(obesity)
+missing_glimpse(obesity)
+ff_glimpse(obesity)
+```
+
+
+
 ```{r labelling}
 obesity <- obesity%>%
         mutate(
@@ -60,7 +72,7 @@ obesity <- obesity%>%
             "Tertiary"
           ))%>%
                 ff_label("Educational status"),
-        marital_satus = factor(marital_satus)%>%
+        marital_status = factor(marital_satus)%>%
                 ff_label("Marital status"),
         ethnicity = factor(ethnicity)%>%
           ff_label("Ethnicity"),
@@ -194,8 +206,38 @@ obesity <- obesity%>%
         )
 ```
 
+```{r dummy-variable}
+obesity <- obesity%>%
+  mutate(
+    obese_dummy = bmi_obese%>%
+      fct_recode(
+        "0" = "Non-obese",
+        "1" = "Obese"
+      )
+  )
+```
+
 
 ## Methods
+
+### Data inspection
+
+```{r ggpairs, message=FALSE}
+obesity%>%
+  dplyr::select(age_years, sex,monthly_income, hypertension)%>%
+  remove_labels() %>%
+  ggpairs()
+```
+
+```{r vif}
+explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+
+dependent <- "obese_dummy"
+
+obesity%>%
+  glmmulti(dependent, explanatory) %>%
+  car::vif()
+```
 
 ### Data analysis
 
@@ -244,11 +286,8 @@ anthropometry <- obesity%>%
 
 ```{r scatterplot-matrix, warning=FALSE, message=FALSE, eval=FALSE}
 obesity%>%
-  dplyr::select(age_years, hours_sleep, fbs_today, fbs_last_visit, sbp, dbp, height, weight, body_fat, muscle_mass, visceral_fat, waist_circumference, bmi)%>%
+  dplyr::select(age_years, hours_sleep, height, weight,bmi)%>%
   ggcorr(label = TRUE)
-  
-  
-#ggpairs(columnLabels = c("age", "hr", "fbs0", "fbs1", "sbp", "dbp", "ht", "wt", "bf", "mm", "vf", "wc", "bmi"))
 ```
 
 
@@ -278,46 +317,182 @@ demographics%>%
 ```
 
 
-```{r age-model, eval=FALSE}
-age_model <- glm(obesity$bmi_obese ~ obesity$age_years, family = binomial(link = logit))
+### Univariate models 
+
+
+```{r univariate-models}
+# Age model
+age_model <- glm(obesity$obese_dummy ~ obesity$age_years, family = binomial)
+
+# Sex model
+sex_model <- glm(obesity$obese_dummy ~ obesity$sex, family = binomial)
+
+# Marital status
+marital_model <- glm(obesity$obese_dummy ~ obesity$marital_status, family = binomial)
+
+# Educational status
+educational_model <- glm(obesity$obese_dummy ~ obesity$educational_status, family = binomial)
+
+# Monthly income
+income_model <- glm(obesity$obese_dummy ~ obesity$monthly_income, family = binomial)
+
+# Hours sleep
+sleep_model <- glm(obesity$obese_dummy ~ obesity$hours_sleep, family = binomial)
+
+# Hypertension
+htn_model <- glm(obesity$obese_dummy ~ obesity$hypertension, family = binomial)
+
+# Religion
+religion_model <- glm(obesity$obese_dummy ~ obesity$religion, family = binomial)
+
+# Occupation
+occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binomial)
 ```
 
+```{r age-model-coefficient}
+coef(age_model)%>% exp()
+confint(age_model)%>% exp()
+```
+
+
+```{r tidy-age-model}
+age_model%>%
+  tidy(conf.int = TRUE, exp = TRUE)
+```
+
+```{r age-model-metrics}
+age_model%>%
+  glance()
+```
+
+### Age model using finalfit
+
+```{r age-model-f}
+explanatory <- "age_years"
+dependent <- "obese_dummy"
+
+obesity%>%
+  finalfit(dependent, explanatory, metrics = TRUE)
+```
+
+### Multiple regression
+
+```{r multi-regression}
+explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+dependent <- "obese_dummy"
+
+multifit <- obesity%>%
+  finalfit(dependent, explanatory, metrics = TRUE)
+```
+
+```{r}
+multifit
+```
+
+```{r table}
+multifit[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
+  column_spec(1, width = "3.5cm")
+```
+
+
+```{r remove-marital-status}
+explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+dependent <- "obese_dummy"
+explanatory_multi <- c("age_years", "sex", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+
+multiremove <- obesity%>%
+  finalfit(dependent, explanatory, explanatory_multi, keep_models = TRUE, metrics = TRUE)
+```
+
+```{r}
+multiremove[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
+  column_spec(1, width = "3.5cm")
+```
+
+```{r}
+multiremove
+```
+
+### Univariate regression tables
 
 ```{r univariate-regression}
-# demographics%>%
-#   tbl_regression()
+# Age model
+t1 <- age_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Sex model
+t2 <- sex_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Educational model
+t3 <- educational_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Hypertension model
+t4 <- htn_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Income model
+t5 <- income_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Marital status
+t6 <- marital_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Occupation model
+t7 <- occupation_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Religion model
+t8 <- religion_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Sleep model
+t9 <- sleep_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
 ```
 
-```{r multiple-logistic-regression, eval=FALSE}
-full_model <- glm(obesity$bmi_obese ~ obesity$age_years + obesity$sex + obesity$ethnicity + obesity$occupation, family=binomial (link=logit)) 
 
-# Summary
-summary(full_model)
-
-# C statistics
-
-DescTools::Cstat(full_model)
-
-# Hosmer lemeshow
-
-HL <- ResourceSelection::hoslem.test(x = full_model$y, y = fitted(full_model), g = 10)
-HL
-
-# plot the observed vs expected number of cases for each of the 10 groups 
-plot(HL$observed[,"y1"], HL$expected[,"yhat1"])
-
-# Alternative hosmer
-generalhoslem::logitgof(obs = full_model$y, exp = fitted(full_model), g = 10) 
-
-# Deviance 
-
-anova(full_model, test="Chisq")
+```{r stack-uni-tables}
+uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
 ```
 
-```{r regression-table, eval=FALSE}
-tbl_regression(full_model, exponentiate = TRUE)%>%
-  add_global_p()%>%bold_p()%>%
-  italicize_levels()
+
+### Multiple regression model
+
+```{r full-model}
+full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_satus+ obesity$religion + obesity$occupation + obesity$monthly_income, family = binomial)
+```
+
+
+```{r multi-regression-table}
+full_t <- full_model%>%
+  tbl_regression(exponentiate = TRUE)%>%bold_p(t = 0.049)
+```
+
+
+```{r combine-table}
+tbl_merge(list(uni_t, full_t),
+          tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
 
 ### Additional cleaning strategies employed
