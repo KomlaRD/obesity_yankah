@@ -32,7 +32,7 @@ obesity <- read_sheet("https://docs.google.com/spreadsheets/d/1MvcEDfO4sNdaCUpbS
                    "sex",
                    "age_years",
                    "educational_status",
-                   "marital_satus",
+                   "marital_status",
                    "ethnicity",
                    "other_ethnicity",
                    "religion",
@@ -148,7 +148,7 @@ obesity <- obesity%>%
             "Tertiary"
           ))%>%
                 ff_label("Educational status"),
-        marital_satus = factor(marital_satus)%>%
+        marital_status = factor(marital_status)%>%
                 ff_label("Marital status"),
         ethnicity = factor(ethnicity)%>%
           ff_label("Ethnicity"),
@@ -352,7 +352,7 @@ obesity <- obesity%>%
 ```{r recode-marital-status}
 obesity <- obesity%>%
   mutate(
-    marital_satus = marital_satus%>%
+    marital_status = marital_status%>%
       fct_recode(
         "Married" = "Living as married/cohabiting"
       )
