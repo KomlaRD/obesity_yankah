@@ -349,8 +349,22 @@ obesity <- obesity%>%
   mutate(fbs_average = (fbs_today + fbs_last_visit) / 2 )
 ```
 
+```{r recode-marital-status}
+obesity <- obesity%>%
+  mutate(
+    marital_satus = marital_satus%>%
+      fct_recode(
+        "Married" = "Living as married/cohabiting"
+      )
+  )
+```
 
-```{r export-clean-data}
+
+```{r export-clean-data-csv}
 export(obesity, here("data", "obesity_clean.csv"))
+```
+
+```{r export-clean-data-rdata}
+export(obesity, here("data", "obesity_clean.RData"))
 ```
 
