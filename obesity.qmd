@@ -1,6 +1,6 @@
 ---
 title: "Prevalence and associated factors of overweight/obesity among aduts with type 2 diabetes in a tertiary health facility"
-format: html
+format: docx
 editor: visual
 toc: true
 fontsize: 12pt
@@ -26,12 +26,13 @@ pacman::p_load(
   finalfit,
   broom,
   kableExtra,
-  knitr
+  knitr,
+  lmtest
 )
 ```
 
 ```{r import-clean-data}
-obesity <- import(here("data","obesity_clean.csv"))
+obesity <- import(here("data","obesity_clean.RData"))
 ```
 
 ```{r remove-columns}
@@ -56,7 +57,7 @@ ff_glimpse(obesity)
 
 
 
-```{r labelling}
+```{r labelling, eval=FALSE}
 obesity <- obesity%>%
         mutate(
         age_years = age_years%>%
@@ -72,7 +73,7 @@ obesity <- obesity%>%
             "Tertiary"
           ))%>%
                 ff_label("Educational status"),
-        marital_status = factor(marital_satus)%>%
+        marital_status = factor(marital_status)%>%
                 ff_label("Marital status"),
         ethnicity = factor(ethnicity)%>%
           ff_label("Ethnicity"),
@@ -249,7 +250,7 @@ demographics <- obesity%>%
   dplyr::select(
     age_years,
     sex,
-    marital_satus,
+    marital_status,
     residential_status,
     religion,
     educational_status,
@@ -296,7 +297,7 @@ demographics%>%
   dplyr::select(-c(bmi_obese, hypertension))%>%
         tbl_summary(
           missing = "no",
-          sort = list(c(marital_satus, ethnicity, occupation, residential_status) ~ "frequency")
+          sort = list(c(marital_status, ethnicity, occupation, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
         bold_labels()%>%add_ci()
@@ -308,7 +309,7 @@ demographics%>%
         tbl_summary(
           by = bmi_obese,
           missing = "no",
-          sort = list(c(marital_satus, ethnicity, occupation, residential_status) ~ "frequency")
+          sort = list(c(marital_status, ethnicity, occupation, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 2. Characteristics of participants by outcome**")%>%
         bold_labels()%>%
@@ -360,8 +361,32 @@ age_model%>%
   tidy(conf.int = TRUE, exp = TRUE)
 ```
 
-```{r age-model-metrics}
+```{r model-metrics}
 age_model%>%
+  glance()
+
+sex_model%>%
+  glance()
+
+educational_model%>%
+  glance()
+
+htn_model%>%
+  glance()
+
+income_model%>%
+  glance()
+
+marital_model%>%
+  glance()
+
+occupation_model%>%
+  glance()
+
+religion_model%>%
+  glance()
+
+sleep_model%>%
   glance()
 ```
 
@@ -480,7 +505,7 @@ uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
 ### Multiple regression model
 
 ```{r full-model}
-full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_satus+ obesity$religion + obesity$occupation + obesity$monthly_income, family = binomial)
+full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_status+ obesity$religion + obesity$occupation + obesity$monthly_income + obesity$hypertension, family = binomial)
 ```
 
 
@@ -489,11 +514,22 @@ full_t <- full_model%>%
   tbl_regression(exponentiate = TRUE)%>%bold_p(t = 0.049)
 ```
 
+```{r final-model-fit}
+final_model <- full_model%>%step(direction = "both", trace = FALSE)
+```
+
+```{r final-model-table}
+final_model_t <- final_model%>%
+  tbl_regression(exponentiate = TRUE)%>%bold_p(t = 0.049)
+```
+
 
 ```{r combine-table}
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
+
+
 
 ### Additional cleaning strategies employed
 
