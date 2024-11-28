@@ -97,6 +97,11 @@ shapiro_p_values <- numeric_vars %>%
 print(shapiro_p_values)
 ```
 
+```{r skim-data}
+skim(obesity)
+```
+
+
 ```{r vif}
 explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
 
