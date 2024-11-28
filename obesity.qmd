@@ -125,7 +125,32 @@ cor_plot(matrix)
 
 
 ```{r vif}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+explanatory <- c("age_years", 
+                 "sex", 
+                 "marital_status", 
+                 "educational_status", 
+                 "monthly_income", 
+                 "hours_sleep", 
+                 "hypertension", 
+                 "religion",
+                 "drunk_alcohol" ,
+                 "duration_dm",
+              
+                 "monthly_income",
+                 "medication" ,
+                  "reaction_dm",
+                  "retinopathy", 
+                 "cataract",
+                 "neuropathy",
+                  "ckd",
+                 "diabetic_foot" ,
+                 "height" ,
+                 "weight"  ,
+                 "muscle_mass",
+                 "visceral_fat",
+                 "waist_circumference",
+                 "fbs_average"
+                 )
 
 dependent <- "obese_dummy"
 
@@ -384,6 +409,7 @@ t9 <- sleep_model%>%
 
 ```{r stack-uni-tables}
 uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
+uni_t
 ```
 
 ### Multiple regression model
