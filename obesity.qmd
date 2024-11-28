@@ -103,7 +103,7 @@ skim(obesity)
 
 ```{r correlation-matrix}
 # Correlation matrix of numeric variables
-numeric_vars |>
+matrix <- numeric_vars |>
   cor_mat(age_years, # Age in years
           hours_sleep, # Hours of sleep
           sbp, # Systolic blood pressure
@@ -117,6 +117,10 @@ numeric_vars |>
           waist_circumference, # Waist circumference
           bmi, # Body mass index
           fbs_average) # Blood sugar reading
+matrix
+```
+```{r correlation-plot}
+cor_plot(matrix)
 ```
 
 
