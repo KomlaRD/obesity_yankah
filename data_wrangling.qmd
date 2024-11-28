@@ -5,18 +5,11 @@ format: html
 
 ```{r import-libraries}
 pacman::p_load(
-  tidyverse,
-  gtsummary,
-  skimr,
-  finalfit,
-  rstatix,
-  GGally,
-  DescTools, # C statistic
-  ResourceSelection, # Hosmer-Lemeshow statistic
-  generalhoslem, # Hosmer-Lemeshow
+  tidyverse, # Data wrangling
+  finalfit, # Labelling data
   rio, #import and export
-  here,
-  googlesheets4
+  here, # File management
+  googlesheets4 # import data from Google Sheet
 )
 ```
 
