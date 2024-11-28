@@ -101,6 +101,24 @@ print(shapiro_p_values)
 skim(obesity)
 ```
 
+```{r correlation-matrix}
+# Correlation matrix of numeric variables
+numeric_vars |>
+  cor_mat(age_years, # Age in years
+          hours_sleep, # Hours of sleep
+          sbp, # Systolic blood pressure
+          dbp, # Diastolic blood pressure
+          duration_dm, # Duration of diabetes
+          height, # Height
+          weight, # Weight
+          body_fat, # Body fat
+          muscle_mass, # Muscle mass
+          visceral_fat, # Visceral fat
+          waist_circumference, # Waist circumference
+          bmi, # Body mass index
+          fbs_average) # Blood sugar reading
+```
+
 
 ```{r vif}
 explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
