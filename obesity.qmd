@@ -13,22 +13,21 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ```{r import-libraries}
 pacman::p_load(
-  tidyverse,
-  gtsummary,
-  skimr,
-  finalfit,
-  rstatix,
-  GGally,
+  tidyverse, # Data wrangling and analysis
+  gtsummary, # Table summaries
+  skimr, # Skim data
+  finalfit, # Label data
+  rstatix, # Statistical test
+  GGally, # Correlation/Scatterplot matrix
   DescTools, # C statistic
   ResourceSelection, # Hosmer-Lemeshow statistic
   generalhoslem, # Hosmer-Lemeshow
   rio, #import and export
-  here,
-  finalfit,
-  broom,
-  kableExtra,
-  knitr,
-  lmtest
+  here, # Final management
+  broom, # Tidy output
+  kableExtra, # Table
+  knitr, # Knit document
+  lmtest # Testing regression models
 )
 ```
 
@@ -56,7 +55,6 @@ missing_glimpse(obesity)
 ff_glimpse(obesity)
 ```
 
-
 ```{r dummy-variable}
 obesity <- obesity%>%
   mutate(
@@ -67,7 +65,6 @@ obesity <- obesity%>%
       )
   )
 ```
-
 
 ## Methods
 
@@ -93,7 +90,6 @@ obesity%>%
 ### Data analysis
 
 Descriptive statistics performed: median (IQR); frequency and proportion.
-
 
 ```{r demographics}
 demographics <- obesity%>%
@@ -133,14 +129,11 @@ anthropometry <- obesity%>%
   )
 ```
 
-
-
 ```{r scatterplot-matrix, warning=FALSE, message=FALSE, eval=FALSE}
 obesity%>%
   dplyr::select(age_years, hours_sleep, height, weight,bmi)%>%
   ggcorr(label = TRUE)
 ```
-
 
 ```{r descriptive-table}
 demographics%>%
@@ -167,9 +160,7 @@ demographics%>%
   bold_p()
 ```
 
-
-### Univariate models 
-
+### Univariate models
 
 ```{r univariate-models}
 # Age model
@@ -204,7 +195,6 @@ occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binom
 coef(age_model)%>% exp()
 confint(age_model)%>% exp()
 ```
-
 
 ```{r tidy-age-model}
 age_model%>%
@@ -268,7 +258,6 @@ multifit
 multifit[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
   column_spec(1, width = "3.5cm")
 ```
-
 
 ```{r remove-marital-status}
 explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
@@ -346,18 +335,15 @@ t9 <- sleep_model%>%
   bold_labels()
 ```
 
-
 ```{r stack-uni-tables}
 uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
 ```
-
 
 ### Multiple regression model
 
 ```{r full-model}
 full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_status+ obesity$religion + obesity$occupation + obesity$monthly_income + obesity$hypertension, family = binomial)
 ```
-
 
 ```{r multi-regression-table}
 full_t <- full_model%>%
@@ -373,13 +359,10 @@ final_model_t <- final_model%>%
   tbl_regression(exponentiate = TRUE)%>%bold_p(t = 0.049)
 ```
 
-
 ```{r combine-table}
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
-
-
 
 ### Additional cleaning strategies employed
 
@@ -387,5 +370,4 @@ One height entry was entered as 14. This was changed to 140 as 14 was less proba
 
 Consider removing individual with bmi of 75.5
 
-Select with p < 0.25
-
+Select with p \< 0.25
