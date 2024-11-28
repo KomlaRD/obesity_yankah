@@ -123,6 +123,12 @@ matrix
 cor_plot(matrix)
 ```
 
+```{r}
+ggplot(data = obesity, aes(x=sex, y=bmi)) +  
+    geom_boxplot() + 
+    labs( x="Sex", y="BMI")
+```
+
 
 ```{r vif}
 explanatory <- c("age_years", 
