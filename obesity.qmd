@@ -71,6 +71,11 @@ obesity <- obesity%>%
 
 ### Data inspection
 
+```{r create-eda-report}
+create_report(data = obesity, report_title = "Obesity Report")
+```
+
+
 ```{r ggpairs, message=FALSE}
 obesity%>%
   dplyr::select(age_years, sex,monthly_income, hypertension)%>%
