@@ -27,7 +27,8 @@ pacman::p_load(
   broom, # Tidy output
   kableExtra, # Table
   knitr, # Knit document
-  lmtest # Testing regression models
+  lmtest, # Testing regression models
+  DataExplorer # EDA report
 )
 ```
 
