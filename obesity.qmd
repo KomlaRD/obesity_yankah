@@ -213,11 +213,6 @@ anthropometry <- obesity%>%
   )
 ```
 
-```{r scatterplot-matrix, warning=FALSE, message=FALSE, eval=FALSE}
-obesity%>%
-  dplyr::select(age_years, hours_sleep, height, weight,bmi)%>%
-  ggcorr(label = TRUE)
-```
 
 ```{r descriptive-table}
 demographics%>%
@@ -275,16 +270,6 @@ religion_model <- glm(obesity$obese_dummy ~ obesity$religion, family = binomial)
 occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binomial)
 ```
 
-```{r age-model-coefficient}
-coef(age_model)%>% exp()
-confint(age_model)%>% exp()
-```
-
-```{r tidy-age-model}
-age_model%>%
-  tidy(conf.int = TRUE, exp = TRUE)
-```
-
 ```{r model-metrics}
 age_model%>%
   glance()
@@ -314,52 +299,6 @@ sleep_model%>%
   glance()
 ```
 
-### Age model using finalfit
-
-```{r age-model-f}
-explanatory <- "age_years"
-dependent <- "obese_dummy"
-
-obesity%>%
-  finalfit(dependent, explanatory, metrics = TRUE)
-```
-
-### Multiple regression
-
-```{r multi-regression}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-dependent <- "obese_dummy"
-
-multifit <- obesity%>%
-  finalfit(dependent, explanatory, metrics = TRUE)
-```
-
-```{r}
-multifit
-```
-
-```{r table}
-multifit[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
-  column_spec(1, width = "3.5cm")
-```
-
-```{r remove-marital-status}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-dependent <- "obese_dummy"
-explanatory_multi <- c("age_years", "sex", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-
-multiremove <- obesity%>%
-  finalfit(dependent, explanatory, explanatory_multi, keep_models = TRUE, metrics = TRUE)
-```
-
-```{r}
-multiremove[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
-  column_spec(1, width = "3.5cm")
-```
-
-```{r}
-multiremove
-```
 
 ### Univariate regression tables
 
