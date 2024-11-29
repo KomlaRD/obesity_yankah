@@ -5,11 +5,11 @@ table-of-contents: true
 editor: visual
 fontsize: 12pt
 output-file: docx
+execute: 
+  echo: false
+  warning: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
-```
 
 ```{r import-libraries}
 pacman::p_load(
