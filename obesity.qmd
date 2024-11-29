@@ -13,22 +13,22 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ```{r import-libraries}
 pacman::p_load(
-  tidyverse,
-  gtsummary,
-  skimr,
-  finalfit,
-  rstatix,
-  GGally,
+  tidyverse, # Data wrangling and analysis
+  gtsummary, # Table summaries
+  skimr, # Skim data
+  finalfit, # Label data
+  rstatix, # Statistical test
+  GGally, # Correlation/Scatterplot matrix
   DescTools, # C statistic
   ResourceSelection, # Hosmer-Lemeshow statistic
   generalhoslem, # Hosmer-Lemeshow
   rio, #import and export
-  here,
-  finalfit,
-  broom,
-  kableExtra,
-  knitr,
-  lmtest
+  here, # Final management
+  broom, # Tidy output
+  kableExtra, # Table
+  knitr, # Knit document
+  lmtest, # Testing regression models
+  DataExplorer # EDA report
 )
 ```
 
@@ -56,7 +56,6 @@ missing_glimpse(obesity)
 ff_glimpse(obesity)
 ```
 
-
 ```{r dummy-variable}
 obesity <- obesity%>%
   mutate(
@@ -68,10 +67,14 @@ obesity <- obesity%>%
   )
 ```
 
-
 ## Methods
 
 ### Data inspection
+
+```{r create-eda-report}
+create_report(data = obesity, report_title = "Obesity Report")
+```
+
 
 ```{r ggpairs, message=FALSE}
 obesity%>%
@@ -80,8 +83,86 @@ obesity%>%
   ggpairs()
 ```
 
+```{r normality-test}
+# Function to perform Shapiro-Wilk test and extract p-value
+shapiro_test <- function(x) {
+  shapiro_result <- shapiro.test(x)
+  return(shapiro_result$p.value)
+}
+
+# Extract numeric variables from the dataset
+numeric_vars <- obesity %>%
+  select_if(is.numeric)
+
+# Apply the Shapiro-Wilk test to each numeric variable and tidy the results
+shapiro_p_values <- numeric_vars %>%
+  summarise(across(everything(), ~ shapiro_test(.))) %>%
+  pivot_longer(everything(), names_to = "Variable", values_to = "P_Value")
+
+# Display the p-values
+print(shapiro_p_values)
+```
+
+```{r skim-data}
+skim(obesity)
+```
+
+```{r correlation-matrix}
+# Correlation matrix of numeric variables
+matrix <- numeric_vars |>
+  cor_mat(age_years, # Age in years
+          hours_sleep, # Hours of sleep
+          sbp, # Systolic blood pressure
+          dbp, # Diastolic blood pressure
+          duration_dm, # Duration of diabetes
+          height, # Height
+          weight, # Weight
+          body_fat, # Body fat
+          muscle_mass, # Muscle mass
+          visceral_fat, # Visceral fat
+          waist_circumference, # Waist circumference
+          bmi, # Body mass index
+          fbs_average) # Blood sugar reading
+matrix
+```
+```{r correlation-plot}
+cor_plot(matrix)
+```
+
+```{r}
+ggplot(data = obesity, aes(x=sex, y=bmi)) +  
+    geom_boxplot() + 
+    labs( x="Sex", y="BMI")
+```
+
+
 ```{r vif}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
+explanatory <- c("age_years", 
+                 "sex", 
+                 "marital_status", 
+                 "educational_status", 
+                 "monthly_income", 
+                 "hours_sleep", 
+                 "hypertension", 
+                 "religion",
+                 "drunk_alcohol" ,
+                 "duration_dm",
+              
+                 "monthly_income",
+                 "medication" ,
+                  "reaction_dm",
+                  "retinopathy", 
+                 "cataract",
+                 "neuropathy",
+                  "ckd",
+                 "diabetic_foot" ,
+                 "height" ,
+                 "weight"  ,
+                 "muscle_mass",
+                 "visceral_fat",
+                 "waist_circumference",
+                 "fbs_average"
+                 )
 
 dependent <- "obese_dummy"
 
@@ -93,7 +174,6 @@ obesity%>%
 ### Data analysis
 
 Descriptive statistics performed: median (IQR); frequency and proportion.
-
 
 ```{r demographics}
 demographics <- obesity%>%
@@ -134,14 +214,6 @@ anthropometry <- obesity%>%
 ```
 
 
-
-```{r scatterplot-matrix, warning=FALSE, message=FALSE, eval=FALSE}
-obesity%>%
-  dplyr::select(age_years, hours_sleep, height, weight,bmi)%>%
-  ggcorr(label = TRUE)
-```
-
-
 ```{r descriptive-table}
 demographics%>%
   dplyr::select(-c(bmi_obese, hypertension))%>%
@@ -167,9 +239,7 @@ demographics%>%
   bold_p()
 ```
 
-
-### Univariate models 
-
+### Univariate models
 
 ```{r univariate-models}
 # Age model
@@ -198,17 +268,6 @@ religion_model <- glm(obesity$obese_dummy ~ obesity$religion, family = binomial)
 
 # Occupation
 occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binomial)
-```
-
-```{r age-model-coefficient}
-coef(age_model)%>% exp()
-confint(age_model)%>% exp()
-```
-
-
-```{r tidy-age-model}
-age_model%>%
-  tidy(conf.int = TRUE, exp = TRUE)
 ```
 
 ```{r model-metrics}
@@ -240,53 +299,6 @@ sleep_model%>%
   glance()
 ```
 
-### Age model using finalfit
-
-```{r age-model-f}
-explanatory <- "age_years"
-dependent <- "obese_dummy"
-
-obesity%>%
-  finalfit(dependent, explanatory, metrics = TRUE)
-```
-
-### Multiple regression
-
-```{r multi-regression}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-dependent <- "obese_dummy"
-
-multifit <- obesity%>%
-  finalfit(dependent, explanatory, metrics = TRUE)
-```
-
-```{r}
-multifit
-```
-
-```{r table}
-multifit[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
-  column_spec(1, width = "3.5cm")
-```
-
-
-```{r remove-marital-status}
-explanatory <- c("age_years", "sex", "marital_status", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-dependent <- "obese_dummy"
-explanatory_multi <- c("age_years", "sex", "educational_status", "monthly_income", "hours_sleep", "hypertension", "religion")
-
-multiremove <- obesity%>%
-  finalfit(dependent, explanatory, explanatory_multi, keep_models = TRUE, metrics = TRUE)
-```
-
-```{r}
-multiremove[[1]] %>% kable(caption = "Multivariable logistic regression: using cut to convert a continuous variable as a factor (fit 3).") %>% 
-  column_spec(1, width = "3.5cm")
-```
-
-```{r}
-multiremove
-```
 
 ### Univariate regression tables
 
@@ -346,18 +358,16 @@ t9 <- sleep_model%>%
   bold_labels()
 ```
 
-
 ```{r stack-uni-tables}
 uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
+uni_t
 ```
-
 
 ### Multiple regression model
 
 ```{r full-model}
 full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_status+ obesity$religion + obesity$occupation + obesity$monthly_income + obesity$hypertension, family = binomial)
 ```
-
 
 ```{r multi-regression-table}
 full_t <- full_model%>%
@@ -373,13 +383,10 @@ final_model_t <- final_model%>%
   tbl_regression(exponentiate = TRUE)%>%bold_p(t = 0.049)
 ```
 
-
 ```{r combine-table}
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
-
-
 
 ### Additional cleaning strategies employed
 
@@ -387,5 +394,4 @@ One height entry was entered as 14. This was changed to 140 as 14 was less proba
 
 Consider removing individual with bmi of 75.5
 
-Select with p < 0.25
-
+Select with p \< 0.25

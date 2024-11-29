@@ -9,7 +9,10 @@ pacman::p_load(
   finalfit, # Data labelling
   rio, #import and export
   here, # File management
-  googlesheets4 # Read sheets
+  finalfit, # Labelling data
+  rio, #import and export
+  here, # File management
+  googlesheets4 # import data from Google Sheet
 )
 ```
 
@@ -349,6 +352,20 @@ obesity <- obesity%>%
       fct_recode(
         "Married" = "Living as married/cohabiting"
       )
+  )
+```
+
+```{r remove-columns-with-high-missing-data}
+# Remove columns with > 50% missing data
+obesity <- obesity |>
+  dpylr::select(
+    -last_alcohol, 
+    -frequent_alcohol,
+    -sexual_weakness,
+    -other_residential_status,
+    -other_ethnicity,
+    -time_vigourous_exercise,
+    -days_vigorous_exercise
   )
 ```
 
