@@ -271,32 +271,46 @@ occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binom
 ```
 
 ```{r model-metrics}
-age_model%>%
-  glance()
+# List of univariate models
+models <- list(age_model, 
+               sex_model, 
+               educational_model, 
+               htn_model, 
+               income_model, 
+               marital_model, 
+               occupation_model, 
+               religion_model, 
+               sleep_model)
 
-sex_model%>%
-  glance()
-
-educational_model%>%
-  glance()
-
-htn_model%>%
-  glance()
-
-income_model%>%
-  glance()
-
-marital_model%>%
-  glance()
-
-occupation_model%>%
-  glance()
-
-religion_model%>%
-  glance()
-
-sleep_model%>%
-  glance()
+# Model metrics
+metrics_results <- lapply(models, glance)
+metrics_results
+# age_model%>%
+#   glance()
+# 
+# sex_model%>%
+#   glance()
+# 
+# educational_model%>%
+#   glance()
+# 
+# htn_model%>%
+#   glance()
+# 
+# income_model%>%
+#   glance()
+# 
+# marital_model%>%
+#   glance()
+# 
+# occupation_model%>%
+#   glance()
+# 
+# religion_model%>%
+#   glance()
+# 
+# sleep_model%>%
+#   glance()
 ```
 
 
