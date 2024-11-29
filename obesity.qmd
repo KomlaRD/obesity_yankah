@@ -13,7 +13,7 @@ execute:
 
 ```{r import-libraries}
 pacman::p_load(
-  tidyverse, # Data wrangling and analysis
+  dpylr, # Data wrangling
   gtsummary, # Table summaries
   skimr, # Skim data
   finalfit, # Label data
@@ -37,7 +37,7 @@ obesity <- import(here("data","obesity_clean.RData"))
 ```
 
 ```{r remove-columns}
-# Remove columns
+# Remove redundant columns and columns with missing data > 50%
 obesity <- obesity%>%
   dplyr::select(-c(
     region,
@@ -46,9 +46,17 @@ obesity <- obesity%>%
     smoke_cigarette,
     smoke_sticks,
     last_smoking,
-    quit_smoking
+    quit_smoking,
+      last_alcohol, 
+    frequent_alcohol,
+    sexual_weakness,
+    other_residential_status,
+    other_ethnicity,
+    time_vigourous_exercise,
+    days_vigorous_exercise
   ))
 ```
+
 
 ```{r inspect-dataset}
 glimpse(obesity)
