@@ -40,11 +40,12 @@ obesity <- import(here("data","obesity_clean.RData"))
 # Remove redundant columns and columns with missing data > 50%
 obesity <- obesity%>%
   dplyr::select(-c(
-    region,
-    district,
-    town,
-    smoke_cigarette,
-    smoke_sticks,
+    region, # Not informative
+    district, # Not informative
+    town, # Not informative
+    smoke_cigarette, # Low levels
+    smoke_sticks,# Low levels
+    # > 50% missing data:
     last_smoking,
     quit_smoking,
       last_alcohol, 
@@ -53,7 +54,9 @@ obesity <- obesity%>%
     other_residential_status,
     other_ethnicity,
     time_vigourous_exercise,
-    days_vigorous_exercise
+    days_vigorous_exercise,
+    fbs_today, # Redundant: info captured in average
+    fbs_last_visit # Redundant: info captured in average
   ))
 ```
 
@@ -409,6 +412,15 @@ final_model_t <- final_model%>%
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
+
+```{r remove-redundant-variables}
+# Remove additional redundant variables before one-hot encoding
+obesity <- obesity |>
+  select(-c(
+    
+  ))
+```
+
 
 ```{r dummify-data}
 dummy_df <- dummify(obesity)
