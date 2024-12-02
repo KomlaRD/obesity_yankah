@@ -419,6 +419,10 @@ dummy_df <- dummify(obesity)
 head(dummy_df)
 ```
 
+```{r export_dummy_df}
+export(dummy_df, here("data", "dummy_obesity.csv"))
+```
+
 
 ### Additional cleaning strategies employed
 
