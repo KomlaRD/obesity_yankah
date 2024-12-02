@@ -293,6 +293,45 @@ religion_model <- glm(obesity$obese_dummy ~ obesity$religion, family = binomial)
 
 # Occupation
 occupation_model <- glm(obesity$obese_dummy ~ obesity$occupation, family = binomial)
+
+# Drunk alcohol
+drunk_alcohol_model <- glm(obesity$obese_dummy ~ obesity$drunk_alcohol, family = binomial)
+
+# Body fat model
+body_fat_model <- glm(obesity$obese_dummy ~ obesity$body_fat, family = binomial)
+
+# Weight model
+weight_model <- glm(obesity$obese_dummy ~ obesity$weight, family = binomial)
+
+# Fried foods
+fried_model <- glm(obesity$obese_dummy ~ obesity$fried_foods, family = binomial)
+
+# Knowledge
+knowledge_model <- glm(obesity$obese_dummy ~ obesity$knowledge_dm, family = binomial)
+
+# Retinopathy
+retinopathy_model <- glm(obesity$obese_dummy ~ obesity$retinopathy, family = binomial)
+
+# Saturated fat
+sat_model <- glm(obesity$obese_dummy ~ obesity$saturated_fat, family = binomial)
+
+# Oral medications
+oral_meds_model <- glm(obesity$obese_dummy ~ obesity$medication, family = binomial)
+
+# Ethnicity
+ethnic_model <- glm(obesity$obese_dummy ~ obesity$ethnicity, family = binomial)
+
+# Eat outside
+outside_model <- glm(obesity$obese_dummy ~ obesity$eat_outside, family = binomial)
+
+# Sweets
+sweets_model <- glm(obesity$obese_dummy ~ obesity$sweets, family = binomial)
+
+# Reaction to dm
+reaction_model <- glm(obesity$obese_dummy ~ obesity$reaction_dm, family = binomial)
+
+# Moderate exercise
+moderate_model <- glm(obesity$obese_dummy ~ obesity$moderate_exercise, family = binomial)
 ```
 
 ```{r model-metrics}
@@ -305,7 +344,21 @@ models <- list(age_model,
                marital_model, 
                occupation_model, 
                religion_model, 
-               sleep_model)
+               sleep_model,
+               drunk_alcohol_model,
+               body_fat_model,
+               weight_model, 
+               fried_model,
+               knowledge_model,
+               retinopathy_model,
+               sat_model,
+               oral_meds_model,
+               ethnic_model,
+               outside_model,
+               sweets_model,
+               reaction_model,
+               moderate_model
+)
 
 # Model metrics
 metrics_results <- lapply(models, glance)
@@ -369,17 +422,99 @@ t9 <- sleep_model%>%
   tbl_regression(exponentiate = TRUE)%>%
   bold_p(t = 0.049)%>%
   bold_labels()
+
+# Drunk alcohol
+t10 <- drunk_alcohol_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+# Body fat
+t11 <- body_fat_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t12 <- drunk_alcohol_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t13 <- body_fat_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t14 <-weight_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t15 <- fried_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t16 <- knowledge_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t17 <- retinopathy_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t18 <- sat_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t19 <-oral_meds_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t20 <-ethnic_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t21 <- outside_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t22 <- sweets_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t23 <- reaction_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
+t24 <- moderate_model%>%
+  tbl_regression(exponentiate = TRUE)%>%
+  bold_p(t = 0.049)%>%
+  bold_labels()
+
 ```
 
 ```{r stack-uni-tables}
-uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8))
+uni_t <- tbl_stack(list(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, 
+                        t12, t14, t15, t16, t17, t18, t19, t20, t21,
+                        t22, t23, t24))
 uni_t
 ```
 
 ### Multiple regression model
 
 ```{r full-model}
-full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_status+ obesity$religion + obesity$occupation + obesity$monthly_income + obesity$hypertension, family = binomial)
+full_model <- glm(obesity$obese_dummy ~ obesity$age_years + obesity$sex + obesity$educational_status + obesity$marital_status+ obesity$religion + obesity$occupation + obesity$monthly_income + obesity$hypertension + obesity$drunk_alcohol + obesity$body_fat + obesity$weight + obesity$fried_foods
++ obesity$knowledge_dm + obesity$retinopathy + obesity$saturated_fat + obesity$medication + obesity$ethnicity + obesity$eat_outside + obesity$sweets
++ obesity$reaction_dm + obesity$moderate_exercise, family = binomial)
 ```
 
 ```{r multi-regression-table}
@@ -388,7 +523,7 @@ full_t <- full_model%>%
 ```
 
 ```{r final-model-fit}
-final_model <- full_model%>%step(direction = "both", trace = FALSE)
+final_model <- full_model%>%step(direction = "backward", trace = FALSE)
 ```
 
 ```{r final-model-table}
@@ -399,13 +534,6 @@ final_model_t <- final_model%>%
 ```{r combine-table}
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
-```
-```{r}
-obesity <-
-  obesity |>
-  dyplr::select(-c(
-    
-  ))
 ```
 
 
