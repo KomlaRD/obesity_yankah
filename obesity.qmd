@@ -13,7 +13,7 @@ execute:
 
 ```{r import-libraries}
 pacman::p_load(
-  dpylr, # Data wrangling
+  tidyverse, # Data wrangling
   gtsummary, # Table summaries
   skimr, # Skim data
   finalfit, # Label data
@@ -409,6 +409,11 @@ final_model_t <- final_model%>%
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
+
+```{r dummify-data}
+dummy_df <- dummify(obesity)
+```
+
 
 ### Additional cleaning strategies employed
 
