@@ -310,32 +310,6 @@ models <- list(age_model,
 # Model metrics
 metrics_results <- lapply(models, glance)
 metrics_results
-# age_model%>%
-#   glance()
-# 
-# sex_model%>%
-#   glance()
-# 
-# educational_model%>%
-#   glance()
-# 
-# htn_model%>%
-#   glance()
-# 
-# income_model%>%
-#   glance()
-# 
-# marital_model%>%
-#   glance()
-# 
-# occupation_model%>%
-#   glance()
-# 
-# religion_model%>%
-#   glance()
-# 
-# sleep_model%>%
-#   glance()
 ```
 
 
