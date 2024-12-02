@@ -413,14 +413,6 @@ tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
 
-```{r remove-redundant-variables}
-# Remove additional redundant variables before one-hot encoding
-obesity <- obesity |>
-  select(-c(
-    
-  ))
-```
-
 
 ```{r dummify-data}
 dummy_df <- dummify(obesity)
