@@ -412,6 +412,7 @@ tbl_merge(list(uni_t, full_t),
 
 ```{r dummify-data}
 dummy_df <- dummify(obesity)
+head(dummy_df)
 ```
 
 
