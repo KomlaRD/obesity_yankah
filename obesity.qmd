@@ -60,6 +60,20 @@ obesity <- obesity%>%
   ))
 ```
 
+```{r}
+# Remove redundant columns and columns with missing data > 50%
+features <- obesity%>%
+  dplyr::select(-c(
+    height_metres, # Redundant
+    bmi, # Related to target
+    bmi_cat, # Target
+    bmi_outcome, # Target
+    bmi_obese, # Target
+    obese_dummy # Target
+    
+  ))
+```
+
 
 ```{r inspect-dataset}
 glimpse(obesity)
@@ -412,10 +426,17 @@ final_model_t <- final_model%>%
 tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
+```{r}
+obesity <-
+  obesity |>
+  dyplr::select(-c(
+    
+  ))
+```
 
 
 ```{r dummify-data}
-dummy_df <- dummify(obesity)
+dummy_df <- dummify(features)
 head(dummy_df)
 ```
 
