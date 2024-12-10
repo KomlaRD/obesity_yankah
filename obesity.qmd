@@ -96,7 +96,7 @@ features <-
 
 ### Data inspection
 
-```{r create-eda-report}
+```{r create-eda-report, eval=FALSE}
 create_report(data = obesity, report_title = "Obesity Report")
 ```
 
@@ -520,7 +520,7 @@ full_t <- full_model%>%
 ```
 
 ```{r final-model-fit}
-final_model <- full_model%>%step(direction = "backward", trace = FALSE)
+final_model <- full_model%>%step(direction = "forward", trace = FALSE)
 ```
 
 ```{r final-model-table}
