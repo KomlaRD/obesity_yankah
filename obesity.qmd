@@ -10,7 +10,6 @@ execute:
   warning: false
 ---
 
-
 ```{r import-libraries}
 pacman::p_load(
   tidyverse, # Data wrangling
@@ -60,20 +59,8 @@ obesity <- obesity%>%
   ))
 ```
 
-```{r}
-# Remove redundant columns and columns with missing data > 50%
-features <- obesity%>%
-  dplyr::select(-c(
-    height_metres, # Redundant
-    bmi, # Related to target
-    bmi_cat, # Target
-    bmi_outcome, # Target
-    bmi_obese, # Target
-    obese_dummy # Target
-    
-  ))
+```{}
 ```
-
 
 ```{r inspect-dataset}
 glimpse(obesity)
@@ -92,6 +79,19 @@ obesity <- obesity%>%
   )
 ```
 
+```{r remove-target-features}
+# Remove redundant columns 
+features <- 
+  obesity%>% dplyr::select(-c( height_metres, 
+                               bmi, 
+                               # Related to target 
+                               bmi_cat, 
+                               bmi_outcome,
+                               bmi_obese,
+                               obese_dummy
+))
+```
+
 ## Methods
 
 ### Data inspection
@@ -99,7 +99,6 @@ obesity <- obesity%>%
 ```{r create-eda-report}
 create_report(data = obesity, report_title = "Obesity Report")
 ```
-
 
 ```{r ggpairs, message=FALSE}
 obesity%>%
@@ -150,6 +149,7 @@ matrix <- numeric_vars |>
           fbs_average) # Blood sugar reading
 matrix
 ```
+
 ```{r correlation-plot}
 cor_plot(matrix)
 ```
@@ -159,7 +159,6 @@ ggplot(data = obesity, aes(x=sex, y=bmi)) +
     geom_boxplot() + 
     labs( x="Sex", y="BMI")
 ```
-
 
 ```{r vif}
 explanatory <- c("age_years", 
@@ -237,7 +236,6 @@ anthropometry <- obesity%>%
     fbs_average
   )
 ```
-
 
 ```{r descriptive-table}
 demographics%>%
@@ -364,7 +362,6 @@ models <- list(age_model,
 metrics_results <- lapply(models, glance)
 metrics_results
 ```
-
 
 ### Univariate regression tables
 
@@ -536,7 +533,6 @@ tbl_merge(list(uni_t, full_t),
           tab_spanner = c("**Univariate regression**", "**Multivariable regression**"))
 ```
 
-
 ```{r dummify-data}
 dummy_df <- dummify(features)
 head(dummy_df)
@@ -545,7 +541,6 @@ head(dummy_df)
 ```{r export_dummy_df}
 export(dummy_df, here("data", "dummy_obesity.csv"))
 ```
-
 
 ### Additional cleaning strategies employed
 
