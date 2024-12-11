@@ -324,13 +324,14 @@ anthropometry <- obesity%>%
     weight,
     height,
     bmi,
-    bmi_cat,
     waist_circumference,
     body_fat,
     visceral_fat,
     muscle_mass,
-    sex,
-    bmi_outcome
+    bmi_cat,
+    muscle_mass_cat,
+    body_fat_cat,
+    visceral_fat_cat
   )
 ```
 
