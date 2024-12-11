@@ -59,7 +59,52 @@ obesity <- obesity%>%
   ))
 ```
 
-```{}
+```{r categorise-muscle}
+# Define categorisation function based on the table
+categorise_muscle <- function(gender, age, percentage) {
+  if (gender == "Female") {
+    if (age >= 18 && age <= 39) {
+      if (percentage < 24.3) return("Low")
+      if (percentage <= 30.3) return("Normal")
+      if (percentage <= 35.3) return("High")
+      return("Very High")
+    } else if (age >= 40 && age <= 59) {
+      if (percentage < 24.1) return("Low")
+      if (percentage <= 30.1) return("Normal")
+      if (percentage <= 35.1) return("High")
+      return("Very High")
+    } else if (age >= 60 && age <= 80) {
+      if (percentage < 23.9) return("Low")
+      if (percentage <= 29.9) return("Normal")
+      if (percentage <= 34.9) return("High")
+      return("Very High")
+    }
+  } else if (gender == "Male") {
+    if (age >= 18 && age <= 39) {
+      if (percentage < 33.3) return("Low")
+      if (percentage <= 39.3) return("Normal")
+      if (percentage <= 44.0) return("High")
+      return("Very High")
+    } else if (age >= 40 && age <= 59) {
+      if (percentage < 33.1) return("Low")
+      if (percentage <= 39.1) return("Normal")
+      if (percentage <= 43.8) return("High")
+      return("Very High")
+    } else if (age >= 60 && age <= 80) {
+      if (percentage < 32.9) return("Low")
+      if (percentage <= 38.9) return("Normal")
+      if (percentage <= 43.6) return("High")
+      return("Very High")
+    }
+  }
+  return(NA) # Default case if no conditions match
+}
+
+# Apply the function to the dataset
+obesity_muscle_cat <- mapply(categorise_muscle, 
+                               obesity$sex, 
+                               obesity$age_years, 
+                               obesity$muscle_mass)
 ```
 
 ```{r inspect-dataset}
