@@ -374,6 +374,15 @@ anthropometry%>%
         bold_labels()
 ```
 
+```{r clinical-table}
+clinical%>%
+        tbl_summary(
+          missing = "Missing"
+        )%>%
+        modify_caption("**Table 3. Clinical data**")%>%
+        bold_labels()
+```
+
 ```{r demographics-by_outcome}
 demographics%>%
   dplyr::select(-c(bmi_cat, bmi_outcome))%>%
