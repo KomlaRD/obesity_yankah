@@ -335,6 +335,25 @@ anthropometry <- obesity%>%
   )
 ```
 
+```{r clinical}
+clinical <- obesity%>%
+  dplyr::select(
+    hours_sleep,
+    sbp,
+    dbp,
+    duration_dm,
+    fbs_average,
+    knowledge_dm,
+    medication,
+    reaction_dm,
+    retinopathy,
+    cataract,
+    neuropathy,
+    hypertension,
+    ckd,
+    diabetic_foot
+  )
+```
 ```{r descriptive-table}
 demographics%>%
   dplyr::select(-c(bmi_obese, hypertension))%>%
