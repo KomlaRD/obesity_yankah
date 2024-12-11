@@ -358,10 +358,19 @@ clinical <- obesity%>%
 demographics%>%
   dplyr::select(-c(bmi_obese, hypertension))%>%
         tbl_summary(
-          missing = "no",
+          missing = "Missing",
           sort = list(c(marital_status, ethnicity, occupation, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
+        bold_labels()
+```
+
+```{r anthro-table}
+anthropometry%>%
+        tbl_summary(
+          missing = "Missing"
+        )%>%
+        modify_caption("**Table 2. Anthropometry and body composition**")%>%
         bold_labels()
 ```
 
