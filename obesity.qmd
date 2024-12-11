@@ -343,7 +343,7 @@ demographics%>%
           sort = list(c(marital_status, ethnicity, occupation, residential_status) ~ "frequency")
         )%>%
         modify_caption("**Table 1. Characteristics of participants**")%>%
-        bold_labels()%>%add_ci()
+        bold_labels()
 ```
 
 ```{r demographics-by_outcome}
