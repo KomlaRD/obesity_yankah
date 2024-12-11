@@ -336,8 +336,7 @@ anthropometry <- obesity%>%
     visceral_fat,
     muscle_mass,
     sex,
-    bmi_outcome,
-    fbs_average
+    bmi_outcome
   )
 ```
 
