@@ -156,6 +156,15 @@ obesity$body_fat_cat <- mapply(categorise_body_fat,
                                  obesity$body_fat)
 ```
 
+```{r categorise-visceral-fat}
+obesity |>
+  case_when(
+    visceral_fat <= 9 ~ "Normal",
+    visceral_fat >= 10 & visceral_fat <= 14, "High",
+    visceral_fat >= 15 & visceral_fat <= 30, "Very high"
+  )
+```
+
 
 ```{r inspect-dataset}
 glimpse(obesity)
