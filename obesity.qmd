@@ -107,6 +107,56 @@ obesity_muscle_cat <- mapply(categorise_muscle,
                                obesity$muscle_mass)
 ```
 
+```{r categorise-body-fat}
+# Function to categorize body fat percentage
+categorise_body_fat <- function(gender, age, body_fat) {
+  if (gender == "Female") {
+    if (age >= 18 && age <= 39) {
+      if (body_fat < 21.0) return("Low")
+      if (body_fat <= 32.9) return("Normal")
+      if (body_fat <= 38.9) return("High")
+      return("Very High")
+    } else if (age >= 40 && age <= 59) {
+      if (body_fat < 23.0) return("Low")
+      if (body_fat <= 33.9) return("Normal")
+      if (body_fat <= 39.9) return("High")
+      return("Very High")
+    } else if (age >= 60 && age <= 80) {
+      if (body_fat < 24.0) return("Low")
+      if (body_fat <= 35.9) return("Normal")
+      if (body_fat <= 40.9) return("High")
+      return("Very High")
+    }
+  } else if (gender == "Male") {
+    if (age >= 18 && age <= 39) {
+      if (body_fat < 8.0) return("Low")
+      if (body_fat <= 19.9) return("Normal")
+      if (body_fat <= 24.9) return("High")
+      return("Very High")
+    } else if (age >= 40 && age <= 59) {
+      if (body_fat < 11.0) return("Low")
+      if (body_fat <= 21.9) return("Normal")
+      if (body_fat <= 27.9) return("High")
+      return("Very High")
+    } else if (age >= 60 && age <= 80) {
+      if (body_fat < 13.0) return("Low")
+      if (body_fat <= 24.9) return("Normal")
+      if (body_fat <= 29.9) return("High")
+      return("Very High")
+    }
+  }
+  return(NA) # Default case if no conditions match
+}
+
+
+# Apply the function to categorize body fat
+obesity$body_fat_cat <- mapply(categorise_body_fat, 
+                                 obesity$sex, 
+                                 obesity$age_years, 
+                                 obesity$body_fat)
+```
+
+
 ```{r inspect-dataset}
 glimpse(obesity)
 missing_glimpse(obesity)
