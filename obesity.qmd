@@ -314,13 +314,7 @@ demographics <- obesity%>%
     educational_status,
     ethnicity,
     occupation,
-    monthly_income,
-    hours_sleep,
-    fbs_average,
-    bmi_outcome,
-    bmi_cat,
-    bmi_obese,
-    hypertension
+    monthly_income
   )
 ```
 
