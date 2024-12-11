@@ -354,6 +354,22 @@ clinical <- obesity%>%
     diabetic_foot
   )
 ```
+```{r dietary}
+dietary <- obesity%>%
+  dplyr::select(
+    drunk_alcohol,
+    meals_day,
+    drinks_day,
+    sweets,
+    sweetener,
+    fried_foods,
+    saturated_fat,
+    refined_food,
+    butter,
+    eat_outside
+  )
+```
+
 ```{r descriptive-table}
 demographics%>%
   dplyr::select(-c(bmi_obese, hypertension))%>%
@@ -382,6 +398,16 @@ clinical%>%
         modify_caption("**Table 3. Clinical data**")%>%
         bold_labels()
 ```
+
+```{r dietary-table}
+dietary%>%
+        tbl_summary(
+          missing = "Missing"
+        )%>%
+        modify_caption("**Table 4. Dietary data**")%>%
+        bold_labels()
+```
+
 
 ```{r demographics-by_outcome}
 demographics%>%
