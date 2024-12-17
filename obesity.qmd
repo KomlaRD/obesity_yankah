@@ -47,7 +47,7 @@ obesity <- obesity%>%
     # > 50% missing data:
     last_smoking,
     quit_smoking,
-      last_alcohol, 
+    last_alcohol, 
     frequent_alcohol,
     sexual_weakness,
     other_residential_status,
@@ -105,6 +105,9 @@ obesity_muscle_cat <- mapply(categorise_muscle,
                                obesity$sex, 
                                obesity$age_years, 
                                obesity$muscle_mass)
+
+# Add obesity muscle category to full dataset
+obesity$obesity_muscle_cat <- obesity_muscle_cat
 ```
 
 ```{r categorise-body-fat}
