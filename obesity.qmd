@@ -110,6 +110,8 @@ obesity_muscle_cat <- mapply(categorise_muscle,
 obesity$obesity_muscle_cat <- obesity_muscle_cat
 ```
 
+
+
 ```{r categorise-body-fat}
 # Function to categorize body fat percentage
 categorise_body_fat <- function(gender, age, body_fat) {
@@ -157,17 +159,28 @@ obesity$body_fat_cat <- mapply(categorise_body_fat,
                                  obesity$sex, 
                                  obesity$age_years, 
                                  obesity$body_fat)
+
 ```
 
 ```{r categorise-visceral-fat}
-obesity |>
+obesity %>%
   case_when(
     visceral_fat <= 9 ~ "Normal",
     visceral_fat >= 10 & visceral_fat <= 14, "High",
-    visceral_fat >= 15 & visceral_fat <= 30, "Very high"
+   visceral_fat >= 15 & visceral_fat <= 30, "Very high"
   )
 ```
 
+```{r}
+obesity %>% dplyr::select(
+  age_years,
+  sex,
+  muscle_mass,
+  obesity_muscle_cat,
+  body_fat_cat,
+  visceral_fat_cat
+)
+```
 
 ```{r inspect-dataset}
 glimpse(obesity)
@@ -187,7 +200,7 @@ obesity <- obesity%>%
 ```
 
 ```{r remove-target-features}
-# Remove redundant columns 
+# Remove features related to target 
 features <- 
   obesity%>% dplyr::select(-c( height_metres, 
                                bmi, 
