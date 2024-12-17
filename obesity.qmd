@@ -336,7 +336,7 @@ anthropometry <- obesity%>%
     visceral_fat,
     muscle_mass,
     bmi_cat,
-    muscle_mass_cat,
+    obesity_muscle_cat,
     body_fat_cat,
     visceral_fat_cat
   )
