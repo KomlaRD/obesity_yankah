@@ -163,24 +163,15 @@ obesity$body_fat_cat <- mapply(categorise_body_fat,
 ```
 
 ```{r categorise-visceral-fat}
-obesity %>%
+obesity$visceral_fat_cat <- 
   case_when(
-    visceral_fat <= 9 ~ "Normal",
-    visceral_fat >= 10 & visceral_fat <= 14, "High",
-   visceral_fat >= 15 & visceral_fat <= 30, "Very high"
+   obesity$visceral_fat <= 9 ~ "Normal",
+   obesity$visceral_fat <= 14 ~ "High",
+   obesity$visceral_fat <= 30 ~ "Very high"
   )
 ```
 
-```{r}
-obesity %>% dplyr::select(
-  age_years,
-  sex,
-  muscle_mass,
-  obesity_muscle_cat,
-  body_fat_cat,
-  visceral_fat_cat
-)
-```
+
 
 ```{r inspect-dataset}
 glimpse(obesity)
