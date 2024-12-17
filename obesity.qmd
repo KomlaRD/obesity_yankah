@@ -379,7 +379,6 @@ dietary <- obesity%>%
 
 ```{r descriptive-table}
 demographics%>%
-  dplyr::select(-c(hypertension))%>%
         tbl_summary(
           missing = "Missing",
           sort = list(c(marital_status, ethnicity, occupation, residential_status) ~ "frequency")
@@ -417,7 +416,7 @@ dietary%>%
 
 
 ```{r demographics-by_outcome}
-demographics%>%
+obesity%>%
   dplyr::select(-c(bmi_cat, bmi_outcome))%>%
         tbl_summary(
           by = bmi_obese,
